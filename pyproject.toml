@@ -11,6 +11,7 @@ dependencies = [
 
 [project.scripts]
 imagegen-worker = "imagegen_worker.worker:main"
+imagegen = "imagegen_worker.cli:main"
 
 [tool.uv.sources]
 ishome-contracts = { git = "ssh://git@github.com/tommax-bai/ishome-contracts.git", tag = "v0.2.0", subdirectory = "gen/python" }
@@ -65,7 +66,28 @@ root_packages = ["imagegen_worker"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "worker 内 worker → activities → models 单向"
+name = "worker|cli → activities → atmosphere → style_prompt → models 单向"
 type = "layers"
-layers = ["worker", "activities", "models"]
+# 两个入口同层且互不可见（"|" = independent siblings）：`worker` 是 Temporal 入口，
+# `cli` 是本地出一张风格图的工具。
+layers = [
+  "worker | cli",
+  "activities",
+  "atmosphere",
+  "style_prompt",
+  "models",
+]
 containers = ["imagegen_worker"]
+
+[[tool.importlinter.contracts]]
+name = "出站边缘 image_gateway 不感知上层：只认逻辑模型名与字节，换模型不动代码"
+type = "forbidden"
+source_modules = ["imagegen_worker.image_gateway"]
+forbidden_modules = [
+  "imagegen_worker.models",
+  "imagegen_worker.style_prompt",
+  "imagegen_worker.atmosphere",
+  "imagegen_worker.activities",
+  "imagegen_worker.worker",
+  "imagegen_worker.cli",
+]
