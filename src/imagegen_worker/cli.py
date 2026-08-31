@@ -3,8 +3,11 @@
     imagegen --master out/plan-master.png --rooms out/rooms.json \
              --template templates/cream-journal.json -o style.png
 
-工具形态先行（同母版、同渲染层）：先能画出一张来，再谈它在编排里怎么被调——
-**接进 activity 的时点写死＝派发链路接通时**。
+**CLI 不废**（服务已建立，2026-08-31）：它是本地迭代的入口——换模板、看一张图长什么样走它，
+不必起 Temporal、也不碰私有桶。与 activity 那条路**共用同一份纯库代码**（`atmosphere` /
+`style_prompt` / `image_gateway`），两条路的区别只在母版字节从哪儿来；分界由 import-linter
+锁死（`cli` 看不见 `activities`）——从它能看见起，"本地改模板不需要桶凭证"就只是一句承诺
+而不是结构。
 """
 
 from __future__ import annotations
@@ -20,20 +23,10 @@ from imagegen_worker.atmosphere import (
     AtmosphereError,
     load_rooms,
     load_template,
+    master_size_px,
     render_atmosphere_visual,
 )
 from imagegen_worker.image_gateway import DEFAULT_GATEWAY_URL
-
-
-def _master_size(path: Path) -> tuple[int, int]:
-    """从 PNG 头里读宽高。**只为把锚点换算成方位**，不引图像库。"""
-    header = path.read_bytes()[:33]
-    if header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
-        raise ValueError(f"不是 PNG：{path}")
-    return (
-        int.from_bytes(header[16:20], "big"),
-        int.from_bytes(header[20:24], "big"),
-    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         master_png = args.master.read_bytes()
-        width_px, height_px = _master_size(args.master)
+        width_px, height_px = master_size_px(master_png)
         rooms = load_rooms(args.rooms)
         template = load_template(args.template)
     except (OSError, ValueError, ValidationError) as e:

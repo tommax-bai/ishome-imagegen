@@ -7,6 +7,9 @@ dependencies = [
   "ishome-contracts",
   "temporalio>=1.8",
   "pydantic>=2.9",
+  # 私有对象存储：母版从桶里取（几何唯一源），风格图写回同一前缀。图不进编排 payload——
+  # 那是拿 Temporal 当文件传输通道用。
+  "oss2>=2.18",
 ]
 
 [project.scripts]
@@ -50,6 +53,11 @@ strict = true
 python_version = "3.12"
 files = ["src", "tests"]
 
+# oss2 不带 py.typed（阿里云 OSS SDK）；定向忽略，勿扩大范围
+[[tool.mypy.overrides]]
+module = ["oss2", "oss2.*"]
+ignore_missing_imports = true
+
 # ---------------------------------------------------------------------------
 # pytest
 # ---------------------------------------------------------------------------
@@ -90,4 +98,19 @@ forbidden_modules = [
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",
+]
+
+[[tool.importlinter.contracts]]
+name = "出站边缘 image_store 不感知上层：收键与字节、回字节——写图的那只手看不见图里画了什么"
+type = "forbidden"
+source_modules = ["imagegen_worker.image_store"]
+forbidden_modules = [
+  "imagegen_worker.models",
+  "imagegen_worker.style_prompt",
+  "imagegen_worker.atmosphere",
+  "imagegen_worker.image_gateway",
+  "imagegen_worker.activities",
+  "imagegen_worker.worker",
+  "imagegen_worker.cli",
+  "temporalio",
 ]

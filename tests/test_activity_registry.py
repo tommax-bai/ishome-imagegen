@@ -6,9 +6,11 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from temporalio import activity
 
-from imagegen_worker.activities import ACTIVITY_REGISTRY
+from imagegen_worker.activities import AtmosphereVisualGenerator, activity_registry
 
 # 注册名 → 函数名（kebab-case ↔ snake_case 动词前置，规范 §2.4）
 CONTRACTS_ACTIVITY_REGISTRY: dict[str, str] = {
@@ -17,13 +19,19 @@ CONTRACTS_ACTIVITY_REGISTRY: dict[str, str] = {
 }
 
 
+def _registry() -> dict[str, Any]:
+    """注册表要一个装好的实现件——**依赖由组合根注入**；这里只点名，给一个空壳就够。"""
+    generator = AtmosphereVisualGenerator(None, {}, "k", "http://gateway.test")  # type: ignore[arg-type]
+    return activity_registry(generator)
+
+
 def test_registry_matches_contracts() -> None:
-    assert set(ACTIVITY_REGISTRY) == set(CONTRACTS_ACTIVITY_REGISTRY)
+    assert set(_registry()) == set(CONTRACTS_ACTIVITY_REGISTRY)
 
 
 def test_registered_temporal_names_match_keys() -> None:
     """字典键、@activity.defn(name=...) 注册名、函数名三者一致。"""
-    for registry_name, fn in ACTIVITY_REGISTRY.items():
+    for registry_name, fn in _registry().items():
         defn = activity._Definition.from_callable(fn)  # noqa: SLF001
         assert defn is not None, f"{registry_name} is not a temporal activity"
         assert defn.name == registry_name

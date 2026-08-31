@@ -28,16 +28,42 @@ class AtmosphereError(Exception):
         self.details = details
 
 
+def master_size_px(master_png: bytes) -> tuple[int, int]:
+    """从 PNG 头里读母版宽高。**只为把锚点换算成方位**，不引图像库。
+
+    **两条路共用这一份**：CLI 从磁盘读母版、activity 从私有桶读母版，读完都走这里——
+    出图逻辑只有一套，两条路的区别只在母版字节从哪儿来。
+    """
+    if (
+        len(master_png) < 24
+        or master_png[:8] != b"\x89PNG\r\n\x1a\n"
+        or master_png[12:16] != b"IHDR"
+    ):
+        raise ValueError("母版不是 PNG（头对不上）：算不出图幅尺寸就换算不出房间方位")
+    return (
+        int.from_bytes(master_png[16:20], "big"),
+        int.from_bytes(master_png[20:24], "big"),
+    )
+
+
 def load_template(path: Path) -> StyleTemplate:
     """读模板。模板是数据（红线：配置只放数据，逻辑归服务）。"""
     with path.open(encoding="utf-8") as f:
         return StyleTemplate.model_validate(json.load(f))
 
 
+def parse_rooms(payload: bytes) -> list[RoomSlot]:
+    """母版交出来的房间表（名字 + 锚点）的字节形态 → 房间槽位。
+
+    **两条路共用这一份**：CLI 从磁盘读那份 JSON、activity 从私有桶读同一份 JSON，
+    读完都走这里。产的一侧（render2d）也只写一处字节，两边认的是同一份东西。
+    """
+    return [RoomSlot.model_validate(item) for item in json.loads(payload.decode("utf-8"))]
+
+
 def load_rooms(path: Path) -> list[RoomSlot]:
-    """读母版交出来的房间表（名字 + 锚点）。"""
-    with path.open(encoding="utf-8") as f:
-        return [RoomSlot.model_validate(item) for item in json.load(f)]
+    """从磁盘读房间表（CLI 那条路）。"""
+    return parse_rooms(path.read_bytes())
 
 
 def render_atmosphere_visual(

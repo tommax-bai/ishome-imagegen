@@ -72,11 +72,41 @@ class AtmosphereVisual(BaseModel):
 
 
 class AtmosphereVisualRequest(BaseModel):
-    """atmosphere-visual 输入：模板库驱动，几何输入=母版固定遮罩。"""
+    """atmosphere-visual 输入：模板库驱动，几何输入＝私有桶里的那张母版。
 
-    plan_master_artifact_id: str
+    **边界上是不透明字典，进来之后才成模型**（同渲染层出册 activity）：派发方不 import 本仓的
+    存根签名，两边只靠 contracts 注册名接头。这个模型是本仓自己的收货单，不是跨仓契约。
+
+    **未知字段当场拒收**（`extra="forbid"`）：两侧的字段口径对不上就是接不上头，静默丢掉一个
+    字段的代价是"派发方以为交代了、执行方没收到"，而两边的单测都是绿的。
+
+    **本轮不收 `renderTier`**：两档要有差别，得先有一个能分档的东西——模板数据里第二个 `size`，
+    或网关里第二个逻辑模型名。在那之前收下它就是收下一个不起作用的开关，真要 `final` 的人
+    拿到 preview 的图也看不出来。触发条件写死＝上述两样任一出现时，本模型加字段、
+    `atmosphere.render_atmosphere_visual` 按它分支。
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="forbid")
+
+    master_object_key: str
+    """母版在私有桶里的键（`uploads/{content_sha256}/plan-master.png`），不是本地路径。
+
+    传键不传字节：母版几 MB，进编排 payload 会被 Temporal 历史一直背着；而键是确定性派生的，
+    重放时按同一条键取到的还是同一份字节。"""
+
+    room_anchors_object_key: str
+    """房间表（房间名 + 遮罩序号 + 锚点）在私有桶里的键。**取键不取内联**，两条判据：
+
+    ①**编排手上没有内联的那一份**：房间表是 `plan-2d-render` 的产物，而那个 activity 的回执
+    里只有对象键（图与 JSON 都不内联——那是拿 Temporal 当文件传输通道用）；workflow 自己
+    不做 IO，所以内联根本无处可取。
+    ②**取键这件事本来就要做**：母版必须走桶，取一次和取两次是同一条通路上的同一件事。
+
+    键由派发方从 `plan-2d-render` 回执里原样带过来（那边叫 `room_anchors_key`），
+    本仓**不抄它的文件名**——只验它与母版同前缀（见 `image_store.check_shares_upload_prefix`）。"""
+
     template_id: str
-    render_tier: RenderTier = "preview"
+    """模板数据的 id（`templates/*.json` 里的那批）。进程起来时装好，认不得的 id 当场失败。"""
 
 
 class RealismPassRequest(BaseModel):
