@@ -1,0 +1,16 @@
+{
+  "templateId": "pencil-sketch",
+  "style": "architect-owner's colourful lifestyle sketch on scanned sketch paper. Rough thick black marker wall lines, colored-pencil hatching that fills each room with a different soft hue, visible pencil grain and slightly uneven strokes, hand-drawn furniture with lived-in clutter — books, plants, toys, a drying rack, small daily objects. Dense but cheerful; it should look drawn by hand in one sitting, not printed.",
+  "composition": "strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. The plan fills the frame with even margins of blank sketch paper. Vertical portrait orientation.",
+  "negatives": [
+    "perspective, isometric or 3D views",
+    "photographic or CGI rendering",
+    "sales-poster polish, glossy gradients, drop shadows",
+    "CAD-drawing look: thin uniform line weights, hatching legends, grid paper",
+    "furniture blocking a door opening or a main circulation path",
+    "adding rooms, gardens, cat areas, esports rooms or gyms that are not in the source plan",
+    "dimension lines, measurement arrows, scale bars, north arrows, legends",
+    "page borders, frames, decorative corners"
+  ],
+  "size": "2K"
+}
