@@ -1,14 +1,15 @@
 {
   "templateId": "cream-journal",
   "style": "warm cream-pink hand-drawn home journal. Soft blush and apricot watercolour washes over warm off-white textured paper, colored-pencil and fine-liner outlines, visible paper grain, gentle drop shadows. Furniture drawn as friendly simplified top-down icons with warm wood tones and cream upholstery. The mood is a young homeowner's beautifully drawn keepsake page, not a sales-office poster and not a technical drawing.",
-  "composition": "strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. The plan fills the frame with generous even margins of blank paper on all four sides. Vertical portrait orientation.",
+  "composition": "strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. RESERVE BLANK PAPER FOR TEXT THAT WILL BE ADDED LATER: the top 24% and the bottom 28% of the image must be completely empty textured paper — no drawing, no furniture, no decoration, no border, nothing at all in those bands. The floor plan is drawn only inside the middle band, with even side margins.",
   "negatives": [
     "perspective, isometric or 3D views",
     "photographic or CGI rendering",
     "furniture blocking a door opening or a main circulation path",
     "adding rooms, islands, bathtubs, walk-in closets, gardens or gyms that are not in the source plan",
     "dimension lines, measurement arrows, scale bars, north arrows, legends",
-    "page borders, frames, decorative corners"
+    "page borders, frames, decorative corners",
+    "drawing, decoration or stickers inside the reserved blank bands at top and bottom"
   ],
   "size": "2K"
 }
