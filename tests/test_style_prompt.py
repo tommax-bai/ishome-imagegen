@@ -1,4 +1,4 @@
-"""提示词红线：房间表必须进去、不出字那条必须在、同样输入拼出同样一段话。"""
+"""提示词红线：房间表必须进去、文字层那句默认是"不出字"、同样输入拼出同样一段话。"""
 
 from __future__ import annotations
 
@@ -34,12 +34,36 @@ def test_room_table_goes_into_the_prompt() -> None:
     assert "lower-left is the 主卧" in prompt
 
 
-def test_no_text_clause_always_present() -> None:
-    # 字由确定性排版层叠：图像模型逐条排版乱码率相乘，且改一句文案就得重生成整图
+def test_no_text_is_the_default() -> None:
+    # 字由确定性排版层叠：图像模型逐条排版乱码率相乘，且改一句文案就得重生成整图。
+    # **不写 roomLabels 就是不出字**——既有模板一份都不改，行为一个字都不变
+    assert _TEMPLATE.room_labels == "none"
     prompt = build_prompt(_TEMPLATE, [_room("客厅", 450, 450)], 900, 900)
 
     assert "no Chinese characters" in prompt
     assert "Render NO text" in prompt
+
+
+def test_handwritten_labels_replace_the_no_text_clause() -> None:
+    """实验档（未裁决）：房间名交给模型手写。**名字是我们给的，不是它猜的**。"""
+    template = _TEMPLATE.model_copy(update={"room_labels": "handwritten"})
+
+    prompt = build_prompt(template, [_room("客厅", 450, 450), _room("卫生间", 100, 100)], 900, 900)
+
+    assert "Render NO text" not in prompt
+    assert "Hand-write each room's Chinese name" in prompt
+    # 逐字复述那一份名单，顺序与房间表一致
+    assert "客厅、卫生间" in prompt
+
+
+def test_handwritten_falls_back_to_no_text_without_a_room_table() -> None:
+    """名字都拿不到就谈不上让它照着写——退回不出字，绝不让它自己编几个字写上去。"""
+    template = _TEMPLATE.model_copy(update={"room_labels": "handwritten"})
+
+    prompt = build_prompt(template, [], 900, 900)
+
+    assert "Render NO text" in prompt
+    assert "Hand-write" not in prompt
 
 
 def test_geometry_source_clause_always_present() -> None:

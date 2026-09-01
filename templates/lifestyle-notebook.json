@@ -1,0 +1,19 @@
+{
+  "templateId": "lifestyle-notebook",
+  "style": "a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and the rooms are full of small objects that show how this household actually lives: hobbies, a pet corner, storage baskets, smart-home gadgets, everyday clutter mid-use. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.",
+  "composition": "strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. RESERVE BLANK PAPER FOR TEXT THAT WILL BE ADDED LATER: the top 24% and the bottom 28% of the image must be completely empty textured paper — no drawing, no furniture, no decoration, no border, nothing at all in those bands. The floor plan is drawn only inside the middle band, with even side margins.",
+  "negatives": [
+    "professional CAD drawing or estate-agent standard floor plan",
+    "3D perspective, isometric views, photorealistic or CGI rendering",
+    "flat vector icon style",
+    "printed computer typefaces, ruled label boxes",
+    "dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends",
+    "cold minimalism, luxury show-flat polish, glossy gradients",
+    "over-tidy machine-perfect edges",
+    "furniture blocking a door opening or a main circulation path",
+    "adding rooms, gardens, gyms or walk-in closets that are not in the source plan",
+    "page borders, frames, decorative corners",
+    "drawing, decoration or stickers inside the reserved blank bands at top and bottom"
+  ],
+  "size": "2K"
+}
