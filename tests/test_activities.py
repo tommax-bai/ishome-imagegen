@@ -157,6 +157,45 @@ async def test_room_table_reaches_the_model(
     assert prompt == result["prompt"]  # 提示词随回执留档，与发出去的那段逐字相同
 
 
+async def test_annotations_and_slots_flow_from_request_into_the_prompt(
+    gateway_returns_an_image: list[dict[str, Any]],
+) -> None:
+    """注释与槽位是**派发数据**：从请求进来、经模型校验、拼进提示词——不是模板措辞。"""
+    handwritten = _TEMPLATE.model_copy(
+        update={"template_id": "note-exp", "room_labels": "handwritten"}
+    )
+    store: Any = _StubImageStore()
+    generator = AtmosphereVisualGenerator(
+        store, {"note-exp": handwritten}, "k", "http://gateway.test"
+    )
+    request = _request(
+        template_id="note-exp",
+        annotations=[{"room": "客厅", "text": "朋友来了也坐得开"}],
+        life_object_slots=[{"room": "厨房", "objects": ["jars along the counter"]}],
+    )
+
+    result = await generator.generate_atmosphere_visual(request)
+
+    assert result["verdict"] == "ok"
+    prompt = gateway_returns_an_image[0]["prompt"]
+    assert "朋友来了也坐得开" in prompt
+    assert "- 厨房: jars along the counter" in prompt
+
+
+async def test_annotations_with_a_no_text_template_come_back_as_failed(
+    gateway_returns_an_image: list[dict[str, Any]],
+) -> None:
+    """给零字模板递注释＝两侧口径冲突：按 failed 逐条回报，一次钱都不花。"""
+    request = _request(annotations=[{"room": "客厅", "text": "朋友来了也坐得开"}])
+
+    result = await _generator(_StubImageStore()).generate_atmosphere_visual(request)
+
+    assert result["verdict"] == "failed"
+    assert [v["check"] for v in result["violations"]] == ["atmosphere-failed"]
+    assert "零字档" in result["violations"][0]["detail"]
+    assert gateway_returns_an_image == []
+
+
 async def test_empty_room_table_never_reaches_the_model(
     gateway_returns_an_image: list[dict[str, Any]],
 ) -> None:

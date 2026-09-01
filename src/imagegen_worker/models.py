@@ -8,17 +8,20 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
 
 RenderTier = Literal["preview", "final"]
 """渲染两档：失效传播默认只重算 preview，final 由用户显式请求或交付节点触发。"""
 
 RoomLabels = Literal["none", "handwritten"]
-"""房间名由谁写。**本仓唯一一处"文字层归谁"的开关**，两档的差别只在提示词最后那一句。
+"""房间名由谁写。**本仓唯一一处"文字层归谁"的开关**，两档的差别只在提示词文字层那几句。
 
-- `none`——图里一个字都不出，房间名由确定性排版层叠上去（**现行口径**，红线"图形层不含文字"）；
-- `handwritten`——把房间名交给图像模型手写进图里（**实验，2026-09-01 起；未裁决，不是新口径**）。
+- `none`——图里一个字都不出，房间名由确定性排版层叠上去（**默认口径**，红线"图形层不含文字"）；
+- `handwritten`——把房间名（与注释）交给图像模型手写进图里。**用户裁决 2026-09-01 上午**：
+  免费第三张风格图＝手账·写字版（`lifestyle-notebook-handwritten`），图上要有注释、
+  注释内容我们给。裁决只到这一份模板——写字的仍只许一份（门禁
+  `test_only_the_experiment_template_writes_its_own_text` 守着），红线对其余模板未松。
 
 **默认必须是 `none`**：既有两份模板不写这个字段，行为一个字都不变。
 
@@ -46,6 +49,66 @@ class RoomSlot(BaseModel):
     anchor_y_px: int
 
 
+class RoomAnnotation(BaseModel):
+    """一条要写上图的注释：挂在哪间房、写什么字。**内容我们给，模型只负责把字画上去**
+    （用户裁决 2026-09-01：注释要有，且不能由模型临时编——上一轮模型自造的四条注释两处
+    箭头指错对象，被推翻的是"先关注释"，没被推翻的是"不许模型自造"）。
+
+    内容由派发方从**户型事实与家庭结构假设**改写而来（同批注那条线的口径：每句引得到事实），
+    位置不在这里带——落点房间的锚点在房间表里，提示词层把它换算成模型原生的归一化坐标钉上去。
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="forbid")
+
+    room: str
+    """落点房间，必须逐字取自房间表——挂在不认识的房间上就没有锚点可钉，当场失败不猜。"""
+
+    text: str
+    """写上图的那句话。**一律不含数字**（数字上图走叠印那条线，未建；红线"数字不由 LLM 决定"
+    的精神——让模型画数字，画错一个字就是错一个数）。"""
+
+    @field_validator("text")
+    @classmethod
+    def _text_carries_no_digits(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("注释文本是空的：空注释画上去是一根指着空气的箭头")
+        digits = "".join(ch for ch in value if ch.isdigit())
+        if digits:
+            raise ValueError(
+                f"注释文本不许带数字（发现 {digits}）：数字上图走叠印那条线，不让模型画数字"
+            )
+        return value
+
+
+class LifeObjectSlot(BaseModel):
+    """一间房该画的生活物件槽位：房间 + 该出现的物件清单（1~3 样，任务口径）。
+
+    **模型不许猜生活需求**（用户目标 Demo 复盘的硬约束）：房间的用途和该有的东西由数据说，
+    模型只负责画。内容从**户型事实与家庭结构假设**推，由派发方传入——不是模板措辞、也不是
+    代码写死（照房间名/注释的先例：数据形状进本模型，派发方以后传）。没给槽位的房间退回
+    中性画法（只画功能家具），不许模型自由发挥补脑。
+
+    同一份槽位数据将来要喂给**所有画风模板**——三张图家具一致性的底子，所以它挂在请求上、
+    不挂在模板上。
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="forbid")
+
+    room: str
+    """哪间房，必须逐字取自房间表。"""
+
+    objects: list[str] = Field(min_length=1, max_length=3)
+    """该画的生活物件，每样一条（英文短语，进提示词当画画指令，不是要写上图的字）。
+    1~3 样是任务口径：0 样的槽位没有意义（那叫没给槽位），多了画面就密成分析表。"""
+
+    @field_validator("objects")
+    @classmethod
+    def _objects_are_not_blank(cls, value: list[str]) -> list[str]:
+        if any(not item.strip() for item in value):
+            raise ValueError("槽位里有空白物件：空字符串画不出东西，是数据没拼好")
+        return value
+
+
 class StyleTemplate(BaseModel):
     """一张风格图的模板本体：**只有风格、构图与禁令，没有任何户型专属内容**。
 
@@ -71,8 +134,8 @@ class StyleTemplate(BaseModel):
     room_labels: RoomLabels = "none"
     """房间名归谁写（见 `RoomLabels`）。**默认 `none`＝图里不出字**，字由确定性排版层叠
     （待拍板① 的倾向：逐条乱码率相乘，且改一句文案就得重生成整图）。
-    `handwritten` 是 2026-09-01 起的**实验档**，业主要的手账风明确要求手写中文房间名；
-    错字率有没有把"文字层分离"证伪，要看真跑的逐字比对，不凭印象。"""
+    `handwritten` 档 2026-09-01 上午被用户拍为免费第三张（手账·写字版＋注释），
+    仍只许一份模板走它；错字率照真跑逐字比对记账，不凭印象。"""
 
     size: str = "2K"
 
@@ -125,6 +188,15 @@ class AtmosphereVisualRequest(BaseModel):
 
     template_id: str
     """模板数据的 id（`templates/*.json` 里的那批）。进程起来时装好，认不得的 id 当场失败。"""
+
+    annotations: list[RoomAnnotation] = Field(default_factory=list)
+    """要写上图的注释（见 `RoomAnnotation`）。**默认空**＝不写注释，既有派发一个字段不加、
+    行为一个字节不变。只有写字那档模板（`roomLabels: handwritten`）收得下它——
+    给零字模板递注释是两侧口径对不上，当场失败不静默丢（丢＝派发方以为交代了、执行方没收到）。"""
+
+    life_object_slots: list[LifeObjectSlot] = Field(default_factory=list)
+    """逐间生活物件槽位（见 `LifeObjectSlot`）。**默认空**＝整张退回中性画法（每间只画功能
+    家具，别的不画），既有派发行为不变。所有画风模板都吃它——家具一致性的底子。"""
 
 
 class RealismPassRequest(BaseModel):

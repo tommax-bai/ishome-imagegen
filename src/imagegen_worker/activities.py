@@ -119,10 +119,13 @@ class AtmosphereVisualGenerator:
                 master_height_px=master_height_px,
                 api_key=self._api_key,
                 gateway_url=self._gateway_url,
+                annotations=parsed.annotations,
+                life_object_slots=parsed.life_object_slots,
             )
         except AtmosphereError as e:
-            # 房间表空、输入图没送到模型（静默退化成文生图）两道门禁都从这儿出来——**逐条回报，
-            # 不给一张差不多的图**。不上抛异常是因为这两类重试一万次也是同一个结果，而每重试
+            # 房间表空、输入图没送到模型（静默退化成文生图）、注释/槽位与房间表对不上——
+            # 几道门禁都从这儿出来，**逐条回报，不给一张差不多的图**。
+            # 不上抛异常是因为这几类重试一万次也是同一个结果，而每重试
             # 一次都要再花一次出图的钱：要不要重试由编排侧显式决定。
             return _failed_many("atmosphere-failed", e.details)
 

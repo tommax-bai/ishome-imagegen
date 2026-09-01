@@ -29,6 +29,8 @@ uv run imagegen-worker                       # 监听 imagegen-activities（TEMP
 | `master_object_key` | 母版在私有桶里的键 `uploads/{content_sha256}/plan-master.png`（render2d `plan-2d-render` 写的那份，回执里的 `master_key`） |
 | `room_anchors_object_key` | 房间表的键（同一次绘制的产物，回执里的 `room_anchors_key`）。**只验它与母版同前缀，不抄它的文件名**——文件名归写它的那一侧定 |
 | `template_id` | `templates/*.json` 里那批模板的 id；起进程时装好，认不得的 id 当场失败 |
+| `annotations`（可选） | 要写上图的注释 `[{room, text}]`——**内容我们给，模型只画字**（用户裁决 2026-09-01：注释要有、不能由模型临时编）。文本一律不含数字（数字上图走叠印那条线，未建）；落点房间必须在房间表里，位置由那间房的锚点换算成模型原生归一化坐标（`<point>`，[0,999]）钉上去；**只有写字档模板收得下**，给零字模板递它当场 failed（「不出字」与「写这些字」不许在同一份提示词里打架） |
+| `lifeObjectSlots`（可选） | 逐间生活物件槽位 `[{room, objects}]`（每间 1~3 样）——**模型不许猜生活需求**：该画什么从户型事实与家庭结构假设推、由派发方传入；没给槽位的房间退回中性画法。**所有画风模板都吃它**（三张图家具一致性的底子）。两个字段都不给＝行为与从前逐字节相同 |
 
 出参 `verdict=ok` 时给 `image_object_key` / `bucket` / `content_type` / `image_size_bytes` / `room_count` / `prompt` / `revised_prompt`；失败时给 `violations`（逐条，不空替不静默）。
 
@@ -42,6 +44,8 @@ uv run imagegen-worker                       # 监听 imagegen-activities（TEMP
 ```bash
 uv run imagegen --master out/plan-master.png --rooms out/rooms.json \
                 --template templates/cream-journal.json -o style.png
+# 注释与槽位是数据文件（与 activity 的两个可选入参同形）：
+#   --annotations annotations.json --life-objects life-objects.json
 ```
 
 换模板、看一张图长什么样走它，不必起 Temporal、也不碰私有桶。与 activity 那条路**共用同一份纯库代码**（`atmosphere` / `style_prompt` / `image_gateway`），区别只在母版字节从哪儿来；分界由 import-linter 锁死（`cli` 看不见 `activities`）——从它能看见起，"本地改模板不需要桶凭证"就只是一句承诺而不是结构。
@@ -62,7 +66,7 @@ uv run imagegen --master out/plan-master.png --rooms out/rooms.json \
 | `cream-journal` | 奶油粉水彩手账 | 零文字 | 235px(8.3%) / 387px(13.7%) |
 | `pencil-sketch` | 彩铅生活草图 | 零文字 | 71px(3.1%) / 79px(3.5%) |
 | `lifestyle-notebook` | 手账风（业主给的那份描述） | 零文字 | **28px(1.2%) / 27px(1.2%)** |
-| `lifestyle-notebook-handwritten` | 同上 | **模型手写中文房间名（实验，未裁决）** | 不留白（字画在图里，本就不留） |
+| `lifestyle-notebook-handwritten` | 同上 | **模型手写房间名＋注释（免费第三张，用户裁决 2026-09-01：注释内容我们给、模型只画字）**；`size` 显式 `1584x2816`（"2K" 的长宽比由模型自己挑，显式尺寸才守得住比例） | 不留白（字画在图里，本就不留） |
 
 **这一轮检验出来的两件，都如实记着，别当它们已经解决**：
 

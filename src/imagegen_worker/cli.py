@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -27,6 +28,7 @@ from imagegen_worker.atmosphere import (
     render_atmosphere_visual,
 )
 from imagegen_worker.image_gateway import DEFAULT_GATEWAY_URL
+from imagegen_worker.models import LifeObjectSlot, RoomAnnotation
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -37,6 +39,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--master", required=True, type=Path, help="母版 PNG（唯一几何来源）")
     parser.add_argument("--rooms", required=True, type=Path, help="母版交出来的房间表 JSON")
     parser.add_argument("--template", required=True, type=Path, help="风格模板 JSON")
+    parser.add_argument(
+        "--annotations",
+        type=Path,
+        default=None,
+        help="要写上图的注释 JSON（[{room, text}]，内容我们给、模型只画字；只有写字档模板收）",
+    )
+    parser.add_argument(
+        "--life-objects",
+        type=Path,
+        default=None,
+        help="逐间生活物件槽位 JSON（[{room, objects}]；不给的房间退回中性画法）",
+    )
     parser.add_argument("-o", "--out", type=Path, default=Path("style.png"))
     parser.add_argument(
         "--gateway", default=os.environ.get("LITELLM_BASE_URL", DEFAULT_GATEWAY_URL)
@@ -56,6 +70,22 @@ def main(argv: list[str] | None = None) -> int:
         width_px, height_px = master_size_px(master_png)
         rooms = load_rooms(args.rooms)
         template = load_template(args.template)
+        annotations = (
+            [
+                RoomAnnotation.model_validate(item)
+                for item in json.loads(args.annotations.read_text(encoding="utf-8"))
+            ]
+            if args.annotations
+            else []
+        )
+        life_object_slots = (
+            [
+                LifeObjectSlot.model_validate(item)
+                for item in json.loads(args.life_objects.read_text(encoding="utf-8"))
+            ]
+            if args.life_objects
+            else []
+        )
     except (OSError, ValueError, ValidationError) as e:
         print(f"读输入失败：{e}", file=sys.stderr)
         return 2
@@ -69,6 +99,8 @@ def main(argv: list[str] | None = None) -> int:
             master_height_px=height_px,
             api_key=api_key,
             gateway_url=args.gateway,
+            annotations=annotations,
+            life_object_slots=life_object_slots,
         )
     except AtmosphereError as e:
         print("风格图出不来（fail loud，不给一张差不多的图）：", file=sys.stderr)

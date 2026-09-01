@@ -10,10 +10,17 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from pathlib import Path
 
 from imagegen_worker import image_gateway
-from imagegen_worker.models import AtmosphereVisual, RoomSlot, StyleTemplate
+from imagegen_worker.models import (
+    AtmosphereVisual,
+    LifeObjectSlot,
+    RoomAnnotation,
+    RoomSlot,
+    StyleTemplate,
+)
 from imagegen_worker.style_prompt import build_prompt
 
 ATMOSPHERE_MODEL = "atmosphere-visual.default"
@@ -66,6 +73,40 @@ def load_rooms(path: Path) -> list[RoomSlot]:
     return parse_rooms(path.read_bytes())
 
 
+def _check_annotation_and_slot_data(
+    *,
+    rooms: list[RoomSlot],
+    template: StyleTemplate,
+    annotations: Sequence[RoomAnnotation],
+    life_object_slots: Sequence[LifeObjectSlot],
+) -> None:
+    """注释与槽位的收货门禁：口径冲突与挂错房间当场拒收，不静默丢。
+
+    静默丢的代价与请求模型里那条相同——派发方以为交代了、执行方没收到，而两边的单测都是绿的。
+    """
+    problems: list[str] = []
+    if annotations and template.room_labels != "handwritten":
+        problems.append(
+            f"模板 `{template.template_id}` 是零字档（roomLabels=none），收不下要写上图的注释——"
+            "注释是字，零字模板的提示词里「不出字」与「写这些字」会打架；要注释就派写字那档模板"
+        )
+    room_names = {room.name for room in rooms}
+    unknown_note_rooms = sorted({note.room for note in annotations} - room_names)
+    if unknown_note_rooms:
+        problems.append(
+            f"注释挂在房间表里没有的房间上：{'、'.join(unknown_note_rooms)}——"
+            "没有锚点就没处钉，挂错房间的注释比没有注释更伤信任"
+        )
+    unknown_slot_rooms = sorted({slot.room for slot in life_object_slots} - room_names)
+    if unknown_slot_rooms:
+        problems.append(
+            f"生活物件槽位挂在房间表里没有的房间上：{'、'.join(unknown_slot_rooms)}——"
+            "两侧的房间口径对不上就是接不上头"
+        )
+    if problems:
+        raise AtmosphereError(problems)
+
+
 def render_atmosphere_visual(
     *,
     master_png: bytes,
@@ -75,13 +116,28 @@ def render_atmosphere_visual(
     master_height_px: int,
     api_key: str,
     gateway_url: str = image_gateway.DEFAULT_GATEWAY_URL,
+    annotations: Sequence[RoomAnnotation] = (),
+    life_object_slots: Sequence[LifeObjectSlot] = (),
 ) -> AtmosphereVisual:
-    """一次风格图生成。"""
+    """一次风格图生成。注释与槽位是可选的派发数据（不给＝行为与从前逐字节相同）。"""
     if not rooms:
         raise AtmosphereError(
             ["房间表是空的：母版上没有字，不给房间表模型只能靠家具猜功能，猜错是必然不是偶然"]
         )
-    prompt = build_prompt(template, rooms, master_width_px, master_height_px)
+    _check_annotation_and_slot_data(
+        rooms=rooms,
+        template=template,
+        annotations=annotations,
+        life_object_slots=life_object_slots,
+    )
+    prompt = build_prompt(
+        template,
+        rooms,
+        master_width_px,
+        master_height_px,
+        annotations=annotations,
+        life_object_slots=life_object_slots,
+    )
     try:
         image_png, revised = image_gateway.generate_from_image(
             model=ATMOSPHERE_MODEL,
