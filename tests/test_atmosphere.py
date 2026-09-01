@@ -110,6 +110,118 @@ def test_slot_on_an_unknown_room_fails_loud() -> None:
         )
 
 
+_TWO_ROOMS = [
+    RoomSlot(name="客厅", mask_index=1, anchor_x_px=100, anchor_y_px=100),
+    RoomSlot(name="卫生间", mask_index=2, anchor_x_px=700, anchor_y_px=700),
+]
+
+
+def test_slots_that_do_not_cover_every_room_fail_loud() -> None:
+    """全集口径下槽位给了就得给全：没清单的房间就是让模型猜着画——
+    上一轮无槽位的卫生间跑出近乎空房、连马桶都没有。要么一间不给，要么每间都给。"""
+    with pytest.raises(atmosphere.AtmosphereError, match="没给全.*卫生间"):
+        atmosphere.render_atmosphere_visual(
+            master_png=b"png",
+            rooms=_TWO_ROOMS,
+            template=_TEMPLATE,
+            master_width_px=900,
+            master_height_px=900,
+            api_key="k",
+            life_object_slots=[LifeObjectSlot(room="客厅", objects=["a sofa"])],
+        )
+
+
+def test_duplicate_slot_lists_for_one_room_fail_loud() -> None:
+    """一间房只有一份全集：两份清单说不清哪份算数，是数据没拼好不是可容的形态。"""
+    with pytest.raises(atmosphere.AtmosphereError, match="两份槽位清单.*客厅"):
+        atmosphere.render_atmosphere_visual(
+            master_png=b"png",
+            rooms=_ROOMS,
+            template=_TEMPLATE,
+            master_width_px=900,
+            master_height_px=900,
+            api_key="k",
+            life_object_slots=[
+                LifeObjectSlot(room="客厅", objects=["a sofa"]),
+                LifeObjectSlot(room="客厅", objects=["a coffee table"]),
+            ],
+        )
+
+
+def test_annotation_entity_missing_from_the_slot_fails_loud() -> None:
+    """数据自洽门禁（防"两半打架"再犯）：注释写着「床和书桌」、清单只有玩具架与书桌——
+    上一轮这份派发数据放行了，真跑两跑小孩房都没画床。现在它进不了门。"""
+    handwritten = _TEMPLATE.model_copy(update={"room_labels": "handwritten"})
+    kids_room = [RoomSlot(name="小孩房", mask_index=1, anchor_x_px=100, anchor_y_px=100)]
+
+    with pytest.raises(atmosphere.AtmosphereError, match="「床」.*bed"):
+        atmosphere.render_atmosphere_visual(
+            master_png=b"png",
+            rooms=kids_room,
+            template=handwritten,
+            master_width_px=900,
+            master_height_px=900,
+            api_key="k",
+            annotations=[RoomAnnotation(room="小孩房", text="小孩房方方正正，床和书桌各归各位")],
+            life_object_slots=[
+                LifeObjectSlot(room="小孩房", objects=["low toy shelves", "a small study desk"])
+            ],
+        )
+
+
+def test_annotation_entities_with_no_slots_at_all_fail_loud() -> None:
+    """注释提到实体、槽位一间都没给＝没人保证那样东西画出来——同一形态的打架，同样拒收。"""
+    handwritten = _TEMPLATE.model_copy(update={"room_labels": "handwritten"})
+    kids_room = [RoomSlot(name="小孩房", mask_index=1, anchor_x_px=100, anchor_y_px=100)]
+
+    with pytest.raises(atmosphere.AtmosphereError, match="提到实体.*床.*没有槽位清单"):
+        atmosphere.render_atmosphere_visual(
+            master_png=b"png",
+            rooms=kids_room,
+            template=handwritten,
+            master_width_px=900,
+            master_height_px=900,
+            api_key="k",
+            annotations=[RoomAnnotation(room="小孩房", text="床和书桌各归各位")],
+        )
+
+
+def test_entity_nouns_match_longest_first() -> None:
+    """字面匹配最长优先、命中段掩掉："床头柜"只算床头柜，不再触发"床"；"书桌"不再触发"桌"。"""
+    found = dict(atmosphere._entity_nouns_in("床头柜配暖灯，书桌靠窗"))
+
+    assert found == {"床头柜": "bedside table", "灯": "lamp", "书桌": "desk"}
+
+
+def test_annotation_entities_present_in_the_slot_pass(monkeypatch: pytest.MonkeyPatch) -> None:
+    """正例收口：清单按全集补上床与书桌之后，同一句注释过门禁、真走到出图那一步。"""
+
+    def _generate(**_: object) -> tuple[bytes, str]:
+        return b"\x89PNG\r\n\x1a\nimg", ""
+
+    monkeypatch.setattr(image_gateway, "generate_from_image", _generate)
+    handwritten = _TEMPLATE.model_copy(update={"room_labels": "handwritten"})
+    kids_room = [RoomSlot(name="小孩房", mask_index=1, anchor_x_px=100, anchor_y_px=100)]
+
+    visual = atmosphere.render_atmosphere_visual(
+        master_png=b"png",
+        rooms=kids_room,
+        template=handwritten,
+        master_width_px=900,
+        master_height_px=900,
+        api_key="k",
+        annotations=[RoomAnnotation(room="小孩房", text="床和书桌各归各位")],
+        life_object_slots=[
+            LifeObjectSlot(
+                room="小孩房",
+                objects=["a child's bed", "low toy shelves", "a small study desk"],
+            )
+        ],
+    )
+
+    assert "- 小孩房: a child's bed; low toy shelves; a small study desk" in visual.prompt
+
+
 def test_experiment_template_asks_for_explicit_pixels() -> None:
     """实验模板的 size 是显式像素尺寸不是 "2K"：出图模型评估实测 "2K" 的长宽比由模型自己挑
     （同参数回来三种比例），显式尺寸才守得住比例与留白带。cream/pencil 不动（降档没拍）。"""

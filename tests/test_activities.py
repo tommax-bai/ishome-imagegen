@@ -171,7 +171,11 @@ async def test_annotations_and_slots_flow_from_request_into_the_prompt(
     request = _request(
         template_id="note-exp",
         annotations=[{"room": "客厅", "text": "朋友来了也坐得开"}],
-        life_object_slots=[{"room": "厨房", "objects": ["jars along the counter"]}],
+        # 全集口径：槽位给了就得给全——房间表里两间，清单也得两间（缺一间当场 failed）
+        life_object_slots=[
+            {"room": "客厅", "objects": ["a large sofa"]},
+            {"room": "厨房", "objects": ["jars along the counter"]},
+        ],
     )
 
     result = await generator.generate_atmosphere_visual(request)
@@ -179,6 +183,7 @@ async def test_annotations_and_slots_flow_from_request_into_the_prompt(
     assert result["verdict"] == "ok"
     prompt = gateway_returns_an_image[0]["prompt"]
     assert "朋友来了也坐得开" in prompt
+    assert "- 客厅: a large sofa" in prompt
     assert "- 厨房: jars along the counter" in prompt
 
 

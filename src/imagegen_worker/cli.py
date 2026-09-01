@@ -49,7 +49,8 @@ def main(argv: list[str] | None = None) -> int:
         "--life-objects",
         type=Path,
         default=None,
-        help="逐间生活物件槽位 JSON（[{room, objects}]；不给的房间退回中性画法）",
+        help="逐间物件槽位 JSON（[{room, objects}]，清单＝全集：功能家具＋生活物件；"
+        "给了就得给全，一间都不给＝整张中性画法）",
     )
     parser.add_argument("-o", "--out", type=Path, default=Path("style.png"))
     parser.add_argument(

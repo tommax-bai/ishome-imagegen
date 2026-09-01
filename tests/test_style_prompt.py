@@ -134,9 +134,16 @@ def test_handwritten_pins_each_room_name_with_a_point() -> None:
     assert "x runs 0-999" in prompt
 
 
-def test_life_object_slots_are_data_not_template_wording() -> None:
-    """槽位进提示词：列了的房间画清单上的物件，没列的退回中性画法——模型不许猜生活需求。"""
-    slots = [LifeObjectSlot(room="小孩房", objects=["low toy shelves", "a small study desk"])]
+def test_life_object_slots_are_the_complete_inventory() -> None:
+    """槽位语义＝全集：每间房画且只画清单里的，功能家具也在清单里——模型不许猜生活需求。
+
+    上一轮清单只装生活物件、"功能家具靠模型补"，实测清单被当成近似全集（小孩房两跑都没画床），
+    这里把新口径钉成字面：全集句在、旧的"plus ONLY"与中性回退半句都不在。
+    """
+    slots = [
+        LifeObjectSlot(room="小孩房", objects=["a child's bed", "low toy shelves"]),
+        LifeObjectSlot(room="主卧", objects=["a double bed", "a wardrobe"]),
+    ]
 
     prompt = build_prompt(
         _TEMPLATE,
@@ -146,9 +153,13 @@ def test_life_object_slots_are_data_not_template_wording() -> None:
         life_object_slots=slots,
     )
 
-    assert "- 小孩房: low toy shelves; a small study desk" in prompt
-    assert "plus ONLY the everyday-life objects listed below" in prompt
-    assert "a room that is not listed gets only furniture appropriate to its function" in prompt
+    assert "- 小孩房: a child's bed; low toy shelves" in prompt
+    assert "- 主卧: a double bed; a wardrobe" in prompt
+    assert "COMPLETE inventory" in prompt
+    assert "draw EVERY object listed for the room" in prompt
+    # 旧口径两半都不许再出现：清单不是"额外加画的"，也没有"没列的房间"这个形态
+    assert "plus ONLY the everyday-life objects" not in prompt
+    assert "a room that is not listed" not in prompt
     # 换掉的是那半句禁令，不是整条房间表
     assert "function and nothing else): " not in prompt
 
@@ -188,10 +199,13 @@ def test_annotation_text_rejects_blank() -> None:
 
 
 def test_life_object_slot_rejects_empty_or_bloated_lists() -> None:
-    """槽位 1~3 样：0 样叫没给槽位，多了画面密成分析表。"""
+    """槽位 1~6 样：0 样叫没给槽位；全集口径把功能家具装了进来（主卧 4 样是真实数据），
+    上限从 3 放到 6，再多画面密成分析表。"""
     with pytest.raises(ValueError):
         LifeObjectSlot(room="客厅", objects=[])
     with pytest.raises(ValueError):
-        LifeObjectSlot(room="客厅", objects=["a", "b", "c", "d"])
+        LifeObjectSlot(room="客厅", objects=["a", "b", "c", "d", "e", "f", "g"])
     with pytest.raises(ValueError, match="空白物件"):
         LifeObjectSlot(room="客厅", objects=["a sofa", " "])
+    # 4 样收得下：主卧＝床＋衣柜＋飘窗椅＋床头柜，是补全后的真实清单形态
+    assert len(LifeObjectSlot(room="主卧", objects=["a", "b", "c", "d"]).objects) == 4

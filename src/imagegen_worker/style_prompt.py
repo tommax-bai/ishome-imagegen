@@ -9,6 +9,12 @@
 **为什么生活物件也由数据说**（2026-09-01）：模型不许猜生活需求——上一轮"draw furniture …
 and nothing else"把生活物件全禁了，图寡淡；而放开让模型自由发挥，它画出来的是猫窝与智能音箱
 （谁家有猫它不知道）。该画什么从户型事实与家庭结构假设推，作为槽位数据传进来。
+
+**清单语义＝全集**（2026-09-01 晚，真跑定罪后改）：先前清单只装生活物件、功能家具靠模型按
+房间名补，实测清单被当成"近似全集"——小孩房给了玩具架与书桌，两跑都没画床，而注释里恰写着
+"床和书桌各归各位"。现在每间房的清单列全（功能家具＋生活物件），口径＝每间房画且只画清单里
+的；"没列的房间只画功能家具"那半句随之取消——槽位给了就得给全（收货门禁在 `atmosphere`），
+混合形态（有的房间有清单、有的靠模型补）正是中性回退下限不稳的来处。
 """
 
 from __future__ import annotations
@@ -120,6 +126,8 @@ def build_prompt(
     **不给注释、不给槽位时，两档模板拼出的话与从前逐字节相同**——既有派发行为不变。
     注释只有写字那档（`roomLabels: handwritten`）拼得进去；给零字模板递注释的口径冲突
     在 `atmosphere` 那层当场拒收，本函数只按写字档拼（纯函数不做门禁）。
+    槽位同理按"每间房都有一份全集清单"拼——给了却没给全在 `atmosphere` 拒收，
+    本函数不重复判，也不再为"没清单的房间"拼中性回退句。
 
     **文字层只有两种收口**：写字档＝房间名＋注释＋"给的以外一个字不写"；零字档＝一个字不出。
     没有房间表时两档都退回"不出字"——名字都拿不到，更谈不上让模型照着写。
@@ -142,18 +150,22 @@ def build_prompt(
             for room in rooms
         )
         furniture_rule = (
-            "draw furniture appropriate to each room's function, plus ONLY the "
-            "everyday-life objects listed below"
+            "each room's complete contents are listed below; draw in each room exactly "
+            "its list, nothing more"
             if life_object_slots
             else "draw furniture appropriate to each room's function and nothing else"
         )
         lines.append(f"Room allocation (follow it exactly; {furniture_rule}): {listed}.")
     if rooms and life_object_slots:
+        # 清单＝全集（功能家具也在里面），且收货门禁保证每间房都有一份——
+        # "没列的房间只画功能家具"那半句因此取消：混合形态（有清单的照单画、没清单的
+        # 让模型按功能补）正是上一轮"卫生间近乎空房"与"小孩房没床"两处失守的来处。
         lines.append(
-            "Everyday-life objects per room (this list is the ONLY source of daily-life "
-            "props: draw for each room exactly the objects listed for it; do not invent "
-            "pets, hobbies, appliances or gadgets that are not listed; a room that is "
-            "not listed gets only furniture appropriate to its function and nothing else):"
+            "Contents of each room (each list is the COMPLETE inventory for that room, "
+            "functional furniture included: draw EVERY object listed for the room — a bed, "
+            "a table or a toilet in a list must appear in the drawing — and draw NOTHING "
+            "in a room that its list does not name; do not invent pets, hobbies, "
+            "appliances or gadgets):"
         )
         lines.extend(f"- {slot.room}: {'; '.join(slot.objects)}" for slot in life_object_slots)
     if handwritten:

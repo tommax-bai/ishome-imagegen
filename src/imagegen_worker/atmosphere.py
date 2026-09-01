@@ -73,6 +73,42 @@ def load_rooms(path: Path) -> list[RoomSlot]:
     return parse_rooms(path.read_bytes())
 
 
+_ANNOTATION_ENTITY_NOUNS: tuple[tuple[str, str], ...] = (
+    ("床头柜", "bedside table"),
+    ("洗衣机", "washing machine"),
+    ("洗手池", "basin"),
+    ("书桌", "desk"),
+    ("餐桌", "dining table"),
+    ("鞋柜", "shoe cabinet"),
+    ("衣柜", "wardrobe"),
+    ("马桶", "toilet"),
+    ("淋浴", "shower"),
+    ("沙发", "sofa"),
+    ("玩具", "toy"),
+    ("床", "bed"),
+    ("桌", "table"),
+    ("椅", "chair"),
+    ("灯", "lamp"),
+)
+"""注释里数得出的实体名词 → 槽位清单里对应的英文词。**字面匹配用，不上模型**。
+
+门禁数据不是知识库：只收"中文名词 → 清单英文用词"对应唯一、字面判得动的词——单字"柜"
+就没进来（衣柜/鞋柜/床头柜各自成词在表里，剩下的"柜"对 cabinet/wardrobe/cupboard 哪个都
+不唯一，字面匹配会把对的数据拦下来）。结构件（飘窗/窗/门/墙）也不进来：它们由母版几何
+保证，不归槽位清单管。匹配最长优先、命中段掩掉再继续——"床头柜"不再触发"床"。"""
+
+
+def _entity_nouns_in(text: str) -> list[tuple[str, str]]:
+    """注释文本里出现的实体名词。最长优先，命中段掩掉——"书桌"命中后不再触发"桌"。"""
+    found: list[tuple[str, str]] = []
+    masked = text
+    for noun, keyword in sorted(_ANNOTATION_ENTITY_NOUNS, key=lambda pair: -len(pair[0])):
+        if noun in masked:
+            found.append((noun, keyword))
+            masked = masked.replace(noun, "＊")
+    return found
+
+
 def _check_annotation_and_slot_data(
     *,
     rooms: list[RoomSlot],
@@ -80,9 +116,12 @@ def _check_annotation_and_slot_data(
     annotations: Sequence[RoomAnnotation],
     life_object_slots: Sequence[LifeObjectSlot],
 ) -> None:
-    """注释与槽位的收货门禁：口径冲突与挂错房间当场拒收，不静默丢。
+    """注释与槽位的收货门禁：口径冲突、挂错房间、清单不全、两半打架，当场拒收不静默丢。
 
     静默丢的代价与请求模型里那条相同——派发方以为交代了、执行方没收到，而两边的单测都是绿的。
+    四道检查：①零字模板收不下注释；②注释/槽位不许挂在房间表外；③槽位给了就得给全、
+    一间一份（全集口径，2026-09-01 晚）；④注释提到的实体必须在那间房的清单里——
+    上一轮小孩房注释写着"床和书桌"、清单只有玩具架与书桌，两跑都没画床，这一道就是防它再犯。
     """
     problems: list[str] = []
     if annotations and template.room_labels != "handwritten":
@@ -97,11 +136,47 @@ def _check_annotation_and_slot_data(
             f"注释挂在房间表里没有的房间上：{'、'.join(unknown_note_rooms)}——"
             "没有锚点就没处钉，挂错房间的注释比没有注释更伤信任"
         )
-    unknown_slot_rooms = sorted({slot.room for slot in life_object_slots} - room_names)
+    slot_rooms = [slot.room for slot in life_object_slots]
+    unknown_slot_rooms = sorted(set(slot_rooms) - room_names)
     if unknown_slot_rooms:
         problems.append(
-            f"生活物件槽位挂在房间表里没有的房间上：{'、'.join(unknown_slot_rooms)}——"
+            f"物件槽位挂在房间表里没有的房间上：{'、'.join(unknown_slot_rooms)}——"
             "两侧的房间口径对不上就是接不上头"
+        )
+    duplicate_slot_rooms = sorted({room for room in slot_rooms if slot_rooms.count(room) > 1})
+    if duplicate_slot_rooms:
+        problems.append(
+            f"同一间房给了两份槽位清单：{'、'.join(duplicate_slot_rooms)}——"
+            "全集口径下一间房只有一份全集，两份就说不清哪份算数"
+        )
+    if life_object_slots:
+        uncovered_rooms = sorted(room_names - set(slot_rooms))
+        if uncovered_rooms:
+            problems.append(
+                f"槽位给了却没给全，这些房间没有清单：{'、'.join(uncovered_rooms)}——"
+                "全集口径下没清单的房间就是让模型猜着画（上一轮无槽位的卫生间跑出近乎空房、"
+                "连马桶都没有）；槽位要么一间不给（整张中性画法），要么每间都给"
+            )
+    inventory_by_room = {slot.room: "; ".join(slot.objects).lower() for slot in life_object_slots}
+    for note in annotations:
+        if note.room not in room_names:
+            continue  # 房间本身就挂错了，上面已报过，不再往下追实体
+        nouns = _entity_nouns_in(note.text)
+        if not nouns:
+            continue
+        inventory = inventory_by_room.get(note.room)
+        if inventory is None:
+            listed = "、".join(noun for noun, _ in nouns)
+            problems.append(
+                f"{note.room}的注释提到实体（{listed}），这间房却没有槽位清单——"
+                "注释说的东西没人保证画出来，正是上一轮「注释写床、清单没床」两半打架的形态"
+            )
+            continue
+        problems.extend(
+            f"{note.room}的注释写着「{noun}」，它的槽位清单里却没有对应物（{keyword}）——"
+            "同一份派发数据两半打架：箭头会指着一样画不出来的东西"
+            for noun, keyword in nouns
+            if keyword not in inventory
         )
     if problems:
         raise AtmosphereError(problems)
