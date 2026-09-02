@@ -151,7 +151,7 @@ class AtmosphereVisualGenerator:
             "template_id": template.template_id,
             "room_count": len(rooms),
             "image_size_bytes": len(visual.image_png),
-            # 格式随字节走、不随键的后缀走（键的 `.png` 是协议，见 `image_store` 那两段）：
+            # 键的扩展名与这个头同源同判、都随字节走（裁决 2026-09-02"标签跟着内容走"）：
             # 下游要发这张图时不必再去问一次存储。
             "content_type": image_content_type_of(visual.image_png),
             # 提示词随回执留档：**将来要能回答"这张图当时是怎么要出来的"**。不另写一个

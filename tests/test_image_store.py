@@ -28,13 +28,21 @@ _ROOM_ANCHORS_KEY = f"uploads/{_SHA}/plan-rooms.json"
 def test_key_templates_are_verbatim() -> None:
     """逐字副本：改这两行就是改协议，改了要同步中控仓的注册表与另一侧。"""
     assert MASTER_KEY_TEMPLATE == "uploads/{content_sha256}/plan-master.png"
-    assert ATMOSPHERE_VISUAL_KEY_TEMPLATE == "uploads/{content_sha256}/atmosphere-{template_id}.png"
-
-
-def test_atmosphere_key_lands_next_to_its_master() -> None:
-    """产物与源图同前缀、由内容哈希确定性派生——重跑覆盖同一个对象，天然幂等。"""
     assert (
-        atmosphere_visual_key_of(_MASTER_KEY, "cream-journal")
+        ATMOSPHERE_VISUAL_KEY_TEMPLATE == "uploads/{content_sha256}/atmosphere-{template_id}.{ext}"
+    )
+
+
+def test_atmosphere_key_lands_next_to_its_master_and_ext_follows_bytes() -> None:
+    """产物与源图同前缀、由内容哈希确定性派生；**扩展名跟字节走**（用户裁决 2026-09-02
+    "标签跟着内容走"）——网关回 JPEG 键就叫 `.jpg`，回 PNG 就叫 `.png`，与注册表
+    `original.{ext}` 先例同口径。"""
+    assert (
+        atmosphere_visual_key_of(_MASTER_KEY, "cream-journal", b"\xff\xd8\xff\xe0JFIF...")
+        == f"uploads/{_SHA}/atmosphere-cream-journal.jpg"
+    )
+    assert (
+        atmosphere_visual_key_of(_MASTER_KEY, "cream-journal", b"\x89PNG\r\n\x1a\n....")
         == f"uploads/{_SHA}/atmosphere-cream-journal.png"
     )
 
@@ -43,8 +51,8 @@ def test_master_key_is_read_not_guessed() -> None:
     assert content_sha256_of_master_key(_MASTER_KEY) == _SHA
 
 
-def test_content_type_follows_the_bytes_not_the_key_suffix() -> None:
-    """真跑实测：键的后缀是 `.png`，而模型回来的是 JPEG——**头按字节写**，不按键写。"""
+def test_content_type_follows_the_bytes() -> None:
+    """头按字节写；裁决 2026-09-02 起键的扩展名与它同源同判，说的是同一件事。"""
     assert image_content_type_of(b"\x89PNG\r\n\x1a\n....") == "image/png"
     assert image_content_type_of(b"\xff\xd8\xff\xe0\x00\x10JFIF") == "image/jpeg"
 

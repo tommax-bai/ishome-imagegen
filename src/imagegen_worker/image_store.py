@@ -29,27 +29,29 @@ MASTER_KEY_TEMPLATE = "uploads/{content_sha256}/plan-master.png"
 不去猜、不去容错：容错的结果是把图写到一个谁也不会去读的地方。
 """
 
-ATMOSPHERE_VISUAL_KEY_TEMPLATE = "uploads/{content_sha256}/atmosphere-{template_id}.png"
+ATMOSPHERE_VISUAL_KEY_TEMPLATE = "uploads/{content_sha256}/atmosphere-{template_id}.{ext}"
 """风格图的对象键：**与源图同一前缀**下的一个派生物。
 
-三条理由照抄注册表开头那三条——键**确定性派生**（同母版同模板重跑覆盖同一个对象，天然幂等）、
+三条理由照抄注册表开头那三条——键**确定性派生**（同母版同模板同格式重跑覆盖同一个对象）、
 **不铸新流水号**（铸一次就多一个对象，重推那次被幂等挡下、多出来的永远没人认领）、
 **键里不含用户身份与渠道方言**（生成侧不知用户是谁，而键是生成侧的产物）。
 `{template_id}` 进键是因为同一份母版会出好几张风格图，它是这几张之间唯一的区别。
 
-**扩展名写死 `.png`，不跟着模型回的格式走**（2026-08-31 首次真跑实测：网关回来的字节是 JPEG）。
-键是跨仓协议，而"回 PNG 还是回 JPEG"是**厂商模型的方言**——换一个物理模型就换一个后缀的话，
-换模型这件常事（变化轴 3）会让同一张图长出两个对象、让按键去取的那一侧取空。
-格式这件事由**这份字节自己的 Content-Type** 说（见 `image_content_type_of`），不由键说。
+**`{ext}` 由字节首部判定（用户裁决 2026-09-02："标签跟着内容走"）**，与注册表对上传件
+`original.{ext}` 的先例同一条口径——键读起来要诚实，写着 `.png` 装着 JPEG 的名不副实作废
+（此前"扩展名写死 `.png`"的口径被该裁决推翻，旧说理见 git 历史）。**裁决时认下的代价**：
+换一个回不同格式的物理模型，同一张图的键会跟着换后缀，按旧键去取的一侧要认两个名——
+拍的时候摆过这一条，取"诚实"舍"稳定"。
 """
 
-_CONTENT_TYPE_BY_MAGIC = (
-    (b"\x89PNG\r\n\x1a\n", "image/png"),
-    (b"\xff\xd8\xff", "image/jpeg"),
+_FORMAT_BY_MAGIC = (
+    (b"\x89PNG\r\n\x1a\n", "image/png", "png"),
+    (b"\xff\xd8\xff", "image/jpeg", "jpg"),
 )
-"""**按字节首部判定格式**——同 contracts 对上传件 `{ext}` 的口径（"由字节首部判定，
-不认字节就整条响亮失败，不按渠道给的文件名猜"）。这里认的是我们自己写出去的那份字节，
-道理相同：签名链接不改这个头，写的时候写错，业主点开看到的就不是一张图。"""
+"""**按字节首部判定格式与扩展名**——同 contracts 对上传件 `{ext}` 的口径（"由字节首部判定，
+不认字节就整条响亮失败，不按渠道给的文件名猜"）。扩展名词面照注册表词表（`jpg`/`png`；
+`webp`/`gif`/`bmp` 目前没有产物会是，等真字节出现再加行）。签名链接不改这个头，
+写的时候写错，业主点开看到的就不是一张图。"""
 
 _CONTENT_SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 """图片字节的 SHA-256 十六进制**小写** 64 字符（注册表口径）。"""
@@ -90,19 +92,24 @@ def content_sha256_of_master_key(master_object_key: str) -> str:
     return content_sha256
 
 
-def image_content_type_of(image_bytes: bytes) -> str:
-    """这份字节是什么图，**按首部判**。不认得就抛——不给一个猜出来的头。
-
-    首跑实测：`atmosphere-visual.default` 现在指的那个物理模型回的是 **JPEG**，而键的后缀是
-    `.png`（键是协议，见 `ATMOSPHERE_VISUAL_KEY_TEMPLATE`）。两者不一致是刻意的：
-    **键说的是"这是哪一张图"，Content-Type 说的是"这份字节是什么格式"**，后者随字节走。
-    """
-    for magic, content_type in _CONTENT_TYPE_BY_MAGIC:
+def _image_format_of(image_bytes: bytes) -> tuple[str, str]:
+    """这份字节是什么图，**按首部判**，返回 (Content-Type, 扩展名)。不认得就抛——不给猜的。"""
+    for magic, content_type, ext in _FORMAT_BY_MAGIC:
         if image_bytes.startswith(magic):
-            return content_type
+            return content_type, ext
     raise ImageStoreError(
-        [f"回来的字节不是认得的图（首部 {image_bytes[:8]!r}）：认不出格式就写不对 Content-Type"]
+        [f"回来的字节不是认得的图（首部 {image_bytes[:8]!r}）：认不出格式就写不对头也起不了键"]
     )
+
+
+def image_content_type_of(image_bytes: bytes) -> str:
+    """这份字节的 Content-Type。与扩展名同源同判（裁决 2026-09-02 起键与头说的是同一件事）。"""
+    return _image_format_of(image_bytes)[0]
+
+
+def image_ext_of(image_bytes: bytes) -> str:
+    """这份字节该用的扩展名（注册表词表词面：`jpg`/`png`）。"""
+    return _image_format_of(image_bytes)[1]
 
 
 def check_template_id(template_id: str) -> None:
@@ -113,12 +120,12 @@ def check_template_id(template_id: str) -> None:
         )
 
 
-def atmosphere_visual_key_of(master_object_key: str, template_id: str) -> str:
-    """风格图的对象键：与母版同前缀，文件名带模板 id。"""
+def atmosphere_visual_key_of(master_object_key: str, template_id: str, image_bytes: bytes) -> str:
+    """风格图的对象键：与母版同前缀，文件名带模板 id，**扩展名按字节首部判**（裁决 2026-09-02）。"""
     content_sha256 = content_sha256_of_master_key(master_object_key)
     check_template_id(template_id)
     return ATMOSPHERE_VISUAL_KEY_TEMPLATE.format(
-        content_sha256=content_sha256, template_id=template_id
+        content_sha256=content_sha256, template_id=template_id, ext=image_ext_of(image_bytes)
     )
 
 
@@ -221,12 +228,14 @@ class OssImageStore:
     ) -> str:
         """写一张风格图，返回对象键。写失败即上抛——不吞、不返回一个指向空气的键。
 
-        参数叫 `image_bytes` 不叫 `image_png`：模型回什么格式是它的事，本层按首部判、
-        照实写头（键的后缀是协议，不是对格式的断言——见 `ATMOSPHERE_VISUAL_KEY_TEMPLATE`）。
+        参数叫 `image_bytes` 不叫 `image_png`：模型回什么格式是它的事，本层按首部判——
+        键的扩展名与 Content-Type 同源同判、说的是同一件事（裁决 2026-09-02"标签跟着内容走"）。
         """
-        key = atmosphere_visual_key_of(master_object_key, template_id)
         if not image_bytes:
-            raise ImageStoreError([f"图是空的，不往桶里写（键 {key}）"])
+            raise ImageStoreError(
+                [f"图是空的，不往桶里写（母版 {master_object_key}，模板 {template_id}）"]
+            )
+        key = atmosphere_visual_key_of(master_object_key, template_id, image_bytes)
         content_type = image_content_type_of(image_bytes)
         try:
             self._bucket.put_object(key, image_bytes, headers={"Content-Type": content_type})

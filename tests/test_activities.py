@@ -88,12 +88,12 @@ class _StubImageStore:
         return json.dumps(self._room_anchors, ensure_ascii=False).encode("utf-8")
 
     def put_atmosphere_visual(
-        self, master_object_key: str, template_id: str, image_png: bytes
+        self, master_object_key: str, template_id: str, image_bytes: bytes
     ) -> str:
         if self._put_fails_with is not None:
             raise ImageStoreError([self._put_fails_with])
-        key = atmosphere_visual_key_of(master_object_key, template_id)
-        self.written[key] = image_png
+        key = atmosphere_visual_key_of(master_object_key, template_id, image_bytes)
+        self.written[key] = image_bytes
         return key
 
 
@@ -131,10 +131,11 @@ async def test_generates_and_writes_the_visual(
     result = await _generator(store).generate_atmosphere_visual(_request())
 
     assert result["verdict"] == "ok"
-    assert result["image_object_key"] == f"uploads/{_SHA}/atmosphere-{_TEMPLATE_ID}.png"
+    # 扩展名跟字节走（裁决 2026-09-02）：网关回的是 JPEG，键就叫 .jpg
+    assert result["image_object_key"] == f"uploads/{_SHA}/atmosphere-{_TEMPLATE_ID}.jpg"
     assert result["room_count"] == 2
     assert result["image_size_bytes"] == len(_IMAGE_BYTES)
-    # 头按字节写：键说 .png，字节是 JPEG，业主点开要看到图不是一屏乱码
+    # 头与键的扩展名同源同判，都按字节写
     assert result["content_type"] == "image/jpeg"
     # 图确实落进了存储，落的就是回报的那个键——不是回一个指向空气的键。
     assert store.written[result["image_object_key"]] == _IMAGE_BYTES
