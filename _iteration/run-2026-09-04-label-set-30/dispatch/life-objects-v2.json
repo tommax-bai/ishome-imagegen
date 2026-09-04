@@ -1,0 +1,11 @@
+[
+  {"room": "玄关", "objects": ["a slim shoe cabinet along one wall", "a small tray for keys and parcels on top"]},
+  {"room": "客厅", "objects": ["a large comfortable sofa with a coffee table for guests", "a low toy basket beside the sofa"]},
+  {"room": "餐厅", "objects": ["a dining table with four chairs"]},
+  {"room": "厨房", "objects": ["a fitted kitchen counter with hob and sink", "everyday cooking clutter: pots, jars and small appliances along the counter"]},
+  {"room": "主卧", "objects": ["a large double bed", "a full-height wardrobe", "a small armchair and reading lamp by the bay window", "bedside tables with warm lamps"]},
+  {"room": "次卧", "objects": ["a neatly made guest bed", "a storage cabinet for seasonal things"]},
+  {"room": "小孩房", "objects": ["a child's bed", "low open toy shelves the child can reach", "a small study desk with a child's chair"]},
+  {"room": "卫生间", "objects": ["a toilet", "a washbasin", "a shower corner"]},
+  {"room": "阳台", "objects": ["a washing machine with a storage cabinet beside it", "laundry drying on a rod"]}
+]

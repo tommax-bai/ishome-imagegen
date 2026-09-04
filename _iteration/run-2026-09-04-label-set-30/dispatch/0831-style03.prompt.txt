@@ -1,0 +1,14 @@
+Use case: style-transfer of an architectural floor plan.
+Input image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.
+Style: architect-owner's colourful lifestyle sketch on scanned sketch paper. Rough thick black marker wall lines, colored-pencil hatching that fills each room with a different soft hue, visible pencil grain and slightly uneven strokes, hand-drawn furniture with lived-in clutter — books, plants, toys, a drying rack, small daily objects. Dense but cheerful; it should look drawn by hand in one sitting, not printed.
+Composition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. The plan fills the frame with even margins of blank sketch paper. Vertical portrait orientation.
+Room allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.
+Render NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.
+Avoid: perspective, isometric or 3D views
+Avoid: photographic or CGI rendering
+Avoid: sales-poster polish, glossy gradients, drop shadows
+Avoid: CAD-drawing look: thin uniform line weights, hatching legends, grid paper
+Avoid: furniture blocking a door opening or a main circulation path
+Avoid: adding rooms, gardens, cat areas, esports rooms or gyms that are not in the source plan
+Avoid: dimension lines, measurement arrows, scale bars, north arrows, legends
+Avoid: page borders, frames, decorative corners

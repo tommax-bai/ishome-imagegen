@@ -1,0 +1,38 @@
+[
+  {
+    "room": "客厅",
+    "text": "外墙上没窗户，白天要开灯",
+    "cites": [
+      "plan-daylight-客厅"
+    ]
+  },
+  {
+    "room": "玄关",
+    "text": "又窄又小，放鞋柜得精打细算",
+    "cites": [
+      "plan-share-玄关",
+      "plan-shape-玄关"
+    ]
+  },
+  {
+    "room": "阳台",
+    "text": "特别狭长，晾衣杆得贴边装",
+    "cites": [
+      "plan-shape-阳台"
+    ]
+  },
+  {
+    "room": "主卧",
+    "text": "有两扇窗，通风采光更自在",
+    "cites": [
+      "plan-daylight-主卧"
+    ]
+  },
+  {
+    "room": "小孩房",
+    "text": "只有一扇窗，靠窗摆床要注意",
+    "cites": [
+      "plan-daylight-小孩房"
+    ]
+  }
+]

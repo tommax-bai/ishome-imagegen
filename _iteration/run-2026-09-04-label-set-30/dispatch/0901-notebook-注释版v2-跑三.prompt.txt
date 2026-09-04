@@ -1,0 +1,35 @@
+Use case: style-transfer of an architectural floor plan.
+Input image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.
+Style: a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and each room contains exactly the furniture and small everyday objects its list in the instructions gives — never invented, never dropped. Some daily-life spots carry small handwritten Chinese notes joined to their object by a quickly drawn arrow; the wording of every note is given in the instructions, never invented. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.
+Composition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. The plan fills the frame with even margins of blank textured paper; the room names and the small notes are written into the drawing itself, so no blank band is reserved.
+Coordinates in this prompt are written as <point>x y</point> in the frame of input image 1: x runs 0-999 left to right, y runs 0-999 top to bottom, the image width and height each divided into 1000 equal units.
+Room allocation (follow it exactly; each room's complete contents are listed below; draw in each room exactly its list, nothing more): lower-center is the 客厅 at <point>522 689</point>; lower-left is the 主卧 at <point>190 804</point>; lower-right is the 次卧 at <point>821 729</point>; upper-left is the 小孩房 at <point>190 333</point>; middle-center is the 餐厅 at <point>492 364</point>; upper-center is the 厨房 at <point>599 146</point>; middle-left is the 卫生间 at <point>190 542</point>; middle-right is the 玄关 at <point>781 513</point>; lower-center is the 阳台 at <point>501 936</point>.
+Contents of each room (each list is the COMPLETE inventory for that room, functional furniture included: draw EVERY object listed for the room — a bed, a table or a toilet in a list must appear in the drawing — and draw NOTHING in a room that its list does not name; do not invent pets, hobbies, appliances or gadgets):
+- 玄关: a slim shoe cabinet along one wall; a small tray for keys and parcels on top
+- 客厅: a large comfortable sofa with a coffee table for guests; a low toy basket beside the sofa
+- 餐厅: a dining table with four chairs
+- 厨房: a fitted kitchen counter with hob and sink; everyday cooking clutter: pots, jars and small appliances along the counter
+- 主卧: a large double bed; a full-height wardrobe; a small armchair and reading lamp by the bay window; bedside tables with warm lamps
+- 次卧: a neatly made guest bed; a storage cabinet for seasonal things
+- 小孩房: a child's bed; low open toy shelves the child can reach; a small study desk with a child's chair
+- 卫生间: a toilet; a washbasin; a shower corner
+- 阳台: a washing machine with a storage cabinet beside it; laundry drying on a rod
+Hand-write each room's Chinese name inside that room, centered on the coordinate given for it, using EXACTLY the characters given for that room — no substitutes, no simplification, no extra characters in the name: 客厅 at <point>522 689</point>、主卧 at <point>190 804</point>、次卧 at <point>821 729</point>、小孩房 at <point>190 333</point>、餐厅 at <point>492 364</point>、厨房 at <point>599 146</point>、卫生间 at <point>190 542</point>、玄关 at <point>781 513</point>、阳台 at <point>501 936</point>. Black handwritten marker, size and angle varying slightly between rooms, no printed typeface, no label box, no underline, no pinyin, no English translation.
+Also hand-write these owner's notes, each inside the room named for it, near the given coordinate, in a smaller and more casual handwriting than the room names, each joined by a short quickly-drawn arrow to the object in that room it talks about. Write EXACTLY the characters given for each note — no substitutes, no additions, no rewording:
+- in the 客厅 near <point>522 689</point>: 客厅是家里最大的地方，朋友来了也坐得开～
+- in the 主卧 near <point>190 804</point>: 主卧飘窗朝南，赖床的周末睁眼就是太阳～
+- in the 小孩房 near <point>190 333</point>: 小孩房方方正正，床和书桌各归各位，好摆～
+- in the 卫生间 near <point>190 542</point>: 卫生间没有窗，排风做扎实些，洗完澡也不闷
+- in the 阳台 near <point>501 936</point>: 洗衣机就归阳台，洗完抬手就晾上啦
+Write NO text anywhere in the image except the room names and the notes given above: no invented notes or labels, no numbers, no English words, no watermarks, no title.
+Avoid: professional CAD drawing or estate-agent standard floor plan
+Avoid: 3D perspective, isometric views, photorealistic or CGI rendering
+Avoid: flat vector icon style
+Avoid: printed computer typefaces, ruled label boxes, evenly spaced captions
+Avoid: dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends
+Avoid: cold minimalism, luxury show-flat polish, glossy gradients
+Avoid: over-tidy machine-perfect edges
+Avoid: furniture blocking a door opening or a main circulation path
+Avoid: adding rooms, gardens, gyms or walk-in closets that are not in the source plan
+Avoid: page borders, frames, decorative corners
+Avoid: handwritten notes, labels or captions whose text is not given in the instructions

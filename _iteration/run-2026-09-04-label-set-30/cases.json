@@ -1,0 +1,1477 @@
+[
+ {
+  "id": "0831-style01",
+  "group": "风格图",
+  "kind": "风格图（8-31 首日）",
+  "date": "2026-08-31",
+  "title": "8-31 风格图第 1 跑（没给房间表）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "模板未记录（首跑）"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [
+   "首跑没给房间表：厨房跑到了次卧的位置（《三张图出得来》§五）"
+  ],
+  "extra": {},
+  "archived": "images/0831-style01.png",
+  "sha256": "15e1bd466a7e4b5e"
+ },
+ {
+  "id": "0831-style02",
+  "group": "风格图",
+  "kind": "风格图（8-31 首日）",
+  "date": "2026-08-31",
+  "title": "8-31 风格图第 2 跑",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: warm cream-pink hand-drawn home journal. Soft blush and apricot watercolour washes over warm off-white textured paper, colored-pencil and fine-liner outlines, visible paper grain, gentle drop shadows. Furniture drawn as friendly simplified top-down icons with warm wood tones and cream upholstery. The mood is a young homeowner's beautifully drawn keepsake page, not a sales-office poster and not a technical drawing.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. The plan fills the frame with generous even margins of blank paper on all four sides. Vertical portrait orientation.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.\nRender NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.\nAvoid: perspective, isometric or 3D views\nAvoid: photographic or CGI rendering\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, islands, bathtubs, walk-in closets, gardens or gyms that are not in the source plan\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, legends\nAvoid: page borders, frames, decorative corners",
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-style02.png",
+  "sha256": "4ad14df6664477e8"
+ },
+ {
+  "id": "0831-style03",
+  "group": "风格图",
+  "kind": "风格图（8-31 首日）",
+  "date": "2026-08-31",
+  "title": "8-31 风格图第 3 跑",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: architect-owner's colourful lifestyle sketch on scanned sketch paper. Rough thick black marker wall lines, colored-pencil hatching that fills each room with a different soft hue, visible pencil grain and slightly uneven strokes, hand-drawn furniture with lived-in clutter — books, plants, toys, a drying rack, small daily objects. Dense but cheerful; it should look drawn by hand in one sitting, not printed.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. The plan fills the frame with even margins of blank sketch paper. Vertical portrait orientation.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.\nRender NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.\nAvoid: perspective, isometric or 3D views\nAvoid: photographic or CGI rendering\nAvoid: sales-poster polish, glossy gradients, drop shadows\nAvoid: CAD-drawing look: thin uniform line weights, hatching legends, grid paper\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, gardens, cat areas, esports rooms or gyms that are not in the source plan\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, legends\nAvoid: page borders, frames, decorative corners",
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-style03.png",
+  "sha256": "8a2994f6d4b00943"
+ },
+ {
+  "id": "0831-style04",
+  "group": "风格图",
+  "kind": "风格图（8-31 首日）",
+  "date": "2026-08-31",
+  "title": "8-31 风格图第 4 跑",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: warm cream-pink hand-drawn home journal. Soft blush and apricot watercolour washes over warm off-white textured paper, colored-pencil and fine-liner outlines, visible paper grain, gentle drop shadows. Furniture drawn as friendly simplified top-down icons with warm wood tones and cream upholstery. The mood is a young homeowner's beautifully drawn keepsake page, not a sales-office poster and not a technical drawing.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. RESERVE BLANK PAPER FOR TEXT THAT WILL BE ADDED LATER: the top 16% and the bottom 22% of the image must be completely empty textured paper — no drawing, no furniture, no decoration, no border there. The floor plan sits in the middle band with even side margins.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.\nRender NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.\nAvoid: perspective, isometric or 3D views\nAvoid: photographic or CGI rendering\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, islands, bathtubs, walk-in closets, gardens or gyms that are not in the source plan\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, legends\nAvoid: page borders, frames, decorative corners\nAvoid: drawing, decoration or stickers inside the reserved blank bands at top and bottom",
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-style04.png",
+  "sha256": "fb6ca3362702deb1"
+ },
+ {
+  "id": "0831-style05",
+  "group": "风格图",
+  "kind": "风格图（8-31 首日）",
+  "date": "2026-08-31",
+  "title": "8-31 风格图第 5 跑",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: warm cream-pink hand-drawn home journal. Soft blush and apricot watercolour washes over warm off-white textured paper, colored-pencil and fine-liner outlines, visible paper grain, gentle drop shadows. Furniture drawn as friendly simplified top-down icons with warm wood tones and cream upholstery. The mood is a young homeowner's beautifully drawn keepsake page, not a sales-office poster and not a technical drawing.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. RESERVE BLANK PAPER FOR TEXT THAT WILL BE ADDED LATER: the top 24% and the bottom 28% of the image must be completely empty textured paper — no drawing, no furniture, no decoration, no border, nothing at all in those bands. The floor plan is drawn only inside the middle band, with even side margins.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.\nRender NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.\nAvoid: perspective, isometric or 3D views\nAvoid: photographic or CGI rendering\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, islands, bathtubs, walk-in closets, gardens or gyms that are not in the source plan\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, legends\nAvoid: page borders, frames, decorative corners\nAvoid: drawing, decoration or stickers inside the reserved blank bands at top and bottom",
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-style05.png",
+  "sha256": "555dec0d05c45879"
+ },
+ {
+  "id": "0831-style05-叠字",
+  "group": "风格图",
+  "kind": "风格图 + 叠字",
+  "date": "2026-08-31",
+  "title": "8-31 第 5 跑叠上文案",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框",
+    "叠上去的字必须逐字等于派发文案"
+   ],
+   "copy": {
+    "title": "暖光小院",
+    "summary": "推开家门，每个角落都自然舒展，日子过得松快又踏实。",
+    "tips": [
+     "玄关虽小，放个换鞋凳和挂钩，进门就安心",
+     "阳台窄长，选细腿家具，晾晒和小憩两不误",
+     "厨房和卫生间都有窗，通风顺手，做饭洗澡都清爽"
+    ]
+   }
+  },
+  "template": "cream-journal",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: warm cream-pink hand-drawn home journal. Soft blush and apricot watercolour washes over warm off-white textured paper, colored-pencil and fine-liner outlines, visible paper grain, gentle drop shadows. Furniture drawn as friendly simplified top-down icons with warm wood tones and cream upholstery. The mood is a young homeowner's beautifully drawn keepsake page, not a sales-office poster and not a technical drawing.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. RESERVE BLANK PAPER FOR TEXT THAT WILL BE ADDED LATER: the top 24% and the bottom 28% of the image must be completely empty textured paper — no drawing, no furniture, no decoration, no border, nothing at all in those bands. The floor plan is drawn only inside the middle band, with even side margins.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.\nRender NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.\nAvoid: perspective, isometric or 3D views\nAvoid: photographic or CGI rendering\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, islands, bathtubs, walk-in closets, gardens or gyms that are not in the source plan\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, legends\nAvoid: page borders, frames, decorative corners\nAvoid: drawing, decoration or stickers inside the reserved blank bands at top and bottom",
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-style05-叠字.png",
+  "sha256": "fbeecdc4d316ce8d"
+ },
+ {
+  "id": "0831-cream-journal-a",
+  "group": "风格图",
+  "kind": "风格图 cream-journal",
+  "date": "2026-08-31 22:49",
+  "title": "cream-journal 服务化真跑（png）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框",
+    "零文字"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-cream-journal-a.png",
+  "sha256": "df09162819a15091"
+ },
+ {
+  "id": "0831-cream-journal-b",
+  "group": "风格图",
+  "kind": "风格图 cream-journal",
+  "date": "2026-08-31 22:57",
+  "title": "cream-journal 服务化真跑（jpg）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框",
+    "零文字"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-cream-journal-b.jpg",
+  "sha256": "d5d4893cddb9cfa3"
+ },
+ {
+  "id": "0901-pencil-sketch",
+  "group": "风格图",
+  "kind": "风格图 彩铅",
+  "date": "2026-09-01 09:43",
+  "title": "彩铅版",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "pencil-sketch：彩铅手绘、整幅铺满；不许加源图没有的房间/花园/猫区/电竞房；不许尺寸线、图例、边框",
+    "零文字"
+   ]
+  },
+  "template": "pencil-sketch",
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0901-pencil-sketch.png",
+  "sha256": "84894b81b73c89a9"
+ },
+ {
+  "id": "0901-notebook-handwritten",
+  "group": "风格图",
+  "kind": "风格图 手账写字版",
+  "date": "2026-09-01 09:43",
+  "title": "手账写字版（房间名由模型手写）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "九个房间名必须逐字正确、落在对的房间；模型不许自造别的字"
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": null,
+  "hidden": [
+   "9 个房间名 20 字零错字、全落对房间；模型自造四条注释（冰箱/猫窝/智能音箱/洗烘一体机），两处箭头指错（\"智能音箱\"指宠物垫、\"猫窝\"指灯座）、一处\"厨宫\"样重复涂鸦、一处不成字淡笔迹"
+  ],
+  "extra": {},
+  "archived": "images/0901-notebook-handwritten.png",
+  "sha256": "0705dc6abd2f2e3f"
+ },
+ {
+  "id": "0901-notebook-零字",
+  "group": "风格图",
+  "kind": "风格图 手账零字版",
+  "date": "2026-09-01 09:43",
+  "title": "手账零字版",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook（零字版）：顶 24%、底 28% 留白；不许印刷字体与标签框；不许加房间；不许尺寸线、图例、边框",
+    "零文字"
+   ]
+  },
+  "template": "lifestyle-notebook",
+  "prompt": null,
+  "hidden": [
+   "餐厅凹处凭空画了个卫生间，墙一根没动——外圈闭合率拦不住功能编造"
+  ],
+  "extra": {},
+  "archived": "images/0901-notebook-零字.png",
+  "sha256": "6b820e78e1840e70"
+ },
+ {
+  "id": "0901-notebook-注释版-跑一",
+  "group": "风格图",
+  "kind": "风格图 注释版 v1",
+  "date": "2026-09-01 14:39",
+  "title": "注释版 v1 跑一（五条注释 + 物件槽位 v1）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "五条注释逐字、各落在自己的房间；物件槽位里列的东西要画出来"
+   ],
+   "annotations": [
+    {
+     "room": "客厅",
+     "text": "客厅是家里最大的地方，朋友来了也坐得开～"
+    },
+    {
+     "room": "主卧",
+     "text": "主卧飘窗朝南，赖床的周末睁眼就是太阳～"
+    },
+    {
+     "room": "小孩房",
+     "text": "小孩房方方正正，床和书桌各归各位，好摆～"
+    },
+    {
+     "room": "卫生间",
+     "text": "卫生间没有窗，排风做扎实些，洗完澡也不闷"
+    },
+    {
+     "room": "阳台",
+     "text": "洗衣机就归阳台，洗完抬手就晾上啦"
+    }
+   ],
+   "objects": [
+    {
+     "room": "玄关",
+     "objects": [
+      "a slim shoe cabinet along one wall",
+      "a small tray for keys and parcels on top"
+     ]
+    },
+    {
+     "room": "客厅",
+     "objects": [
+      "a large comfortable sofa with a coffee table for guests",
+      "a low toy basket beside the sofa"
+     ]
+    },
+    {
+     "room": "餐厅",
+     "objects": [
+      "a dining table with four chairs"
+     ]
+    },
+    {
+     "room": "厨房",
+     "objects": [
+      "everyday cooking clutter: pots, jars and small appliances along the counter"
+     ]
+    },
+    {
+     "room": "主卧",
+     "objects": [
+      "a small armchair and reading lamp by the bay window",
+      "bedside tables with warm lamps"
+     ]
+    },
+    {
+     "room": "次卧",
+     "objects": [
+      "a neatly made guest bed",
+      "a storage cabinet for seasonal things"
+     ]
+    },
+    {
+     "room": "小孩房",
+     "objects": [
+      "low open toy shelves the child can reach",
+      "a small study desk with a child's chair"
+     ]
+    },
+    {
+     "room": "阳台",
+     "objects": [
+      "a washing machine with a storage cabinet beside it",
+      "laundry drying on a rod"
+     ]
+    }
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and the rooms are filled with the small everyday objects this household actually uses — the exact objects for each room are listed in the instructions, never invented. Some daily-life spots carry small handwritten Chinese notes joined to their object by a quickly drawn arrow; the wording of every note is given in the instructions, never invented. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. The plan fills the frame with even margins of blank textured paper; the room names and the small notes are written into the drawing itself, so no blank band is reserved.\nCoordinates in this prompt are written as <point>x y</point> in the frame of input image 1: x runs 0-999 left to right, y runs 0-999 top to bottom, the image width and height each divided into 1000 equal units.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function, plus ONLY the everyday-life objects listed below): lower-center is the 客厅 at <point>522 689</point>; lower-left is the 主卧 at <point>190 804</point>; lower-right is the 次卧 at <point>821 729</point>; upper-left is the 小孩房 at <point>190 333</point>; middle-center is the 餐厅 at <point>492 364</point>; upper-center is the 厨房 at <point>599 146</point>; middle-left is the 卫生间 at <point>190 542</point>; middle-right is the 玄关 at <point>781 513</point>; lower-center is the 阳台 at <point>501 936</point>.\nEveryday-life objects per room (this list is the ONLY source of daily-life props: draw for each room exactly the objects listed for it; do not invent pets, hobbies, appliances or gadgets that are not listed; a room that is not listed gets only furniture appropriate to its function and nothing else):\n- 玄关: a slim shoe cabinet along one wall; a small tray for keys and parcels on top\n- 客厅: a large comfortable sofa with a coffee table for guests; a low toy basket beside the sofa\n- 餐厅: a dining table with four chairs\n- 厨房: everyday cooking clutter: pots, jars and small appliances along the counter\n- 主卧: a small armchair and reading lamp by the bay window; bedside tables with warm lamps\n- 次卧: a neatly made guest bed; a storage cabinet for seasonal things\n- 小孩房: low open toy shelves the child can reach; a small study desk with a child's chair\n- 阳台: a washing machine with a storage cabinet beside it; laundry drying on a rod\nHand-write each room's Chinese name inside that room, centered on the coordinate given for it, using EXACTLY the characters given for that room — no substitutes, no simplification, no extra characters in the name: 客厅 at <point>522 689</point>、主卧 at <point>190 804</point>、次卧 at <point>821 729</point>、小孩房 at <point>190 333</point>、餐厅 at <point>492 364</point>、厨房 at <point>599 146</point>、卫生间 at <point>190 542</point>、玄关 at <point>781 513</point>、阳台 at <point>501 936</point>. Black handwritten marker, size and angle varying slightly between rooms, no printed typeface, no label box, no underline, no pinyin, no English translation.\nAlso hand-write these owner's notes, each inside the room named for it, near the given coordinate, in a smaller and more casual handwriting than the room names, each joined by a short quickly-drawn arrow to the object in that room it talks about. Write EXACTLY the characters given for each note — no substitutes, no additions, no rewording:\n- in the 客厅 near <point>522 689</point>: 客厅是家里最大的地方，朋友来了也坐得开～\n- in the 主卧 near <point>190 804</point>: 主卧飘窗朝南，赖床的周末睁眼就是太阳～\n- in the 小孩房 near <point>190 333</point>: 小孩房方方正正，床和书桌各归各位，好摆～\n- in the 卫生间 near <point>190 542</point>: 卫生间没有窗，排风做扎实些，洗完澡也不闷\n- in the 阳台 near <point>501 936</point>: 洗衣机就归阳台，洗完抬手就晾上啦\nWrite NO text anywhere in the image except the room names and the notes given above: no invented notes or labels, no numbers, no English words, no watermarks, no title.\nAvoid: professional CAD drawing or estate-agent standard floor plan\nAvoid: 3D perspective, isometric views, photorealistic or CGI rendering\nAvoid: flat vector icon style\nAvoid: printed computer typefaces, ruled label boxes, evenly spaced captions\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends\nAvoid: cold minimalism, luxury show-flat polish, glossy gradients\nAvoid: over-tidy machine-perfect edges\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, gardens, gyms or walk-in closets that are not in the source plan\nAvoid: page borders, frames, decorative corners\nAvoid: handwritten notes, labels or captions whose text is not given in the instructions",
+  "hidden": [
+   "2 处\"厅\"被替换成错字；小孩房没画床（注释里恰写着\"床和书桌\"）；卫生间近乎空房"
+  ],
+  "extra": {},
+  "archived": "images/0901-notebook-注释版-跑一.png",
+  "sha256": "bac90840b5e4dafd"
+ },
+ {
+  "id": "0901-notebook-注释版-跑二",
+  "group": "风格图",
+  "kind": "风格图 注释版 v1",
+  "date": "2026-09-01 14:39",
+  "title": "注释版 v1 跑二（五条注释 + 物件槽位 v1）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "五条注释逐字、各落在自己的房间；物件槽位里列的东西要画出来"
+   ],
+   "annotations": [
+    {
+     "room": "客厅",
+     "text": "客厅是家里最大的地方，朋友来了也坐得开～"
+    },
+    {
+     "room": "主卧",
+     "text": "主卧飘窗朝南，赖床的周末睁眼就是太阳～"
+    },
+    {
+     "room": "小孩房",
+     "text": "小孩房方方正正，床和书桌各归各位，好摆～"
+    },
+    {
+     "room": "卫生间",
+     "text": "卫生间没有窗，排风做扎实些，洗完澡也不闷"
+    },
+    {
+     "room": "阳台",
+     "text": "洗衣机就归阳台，洗完抬手就晾上啦"
+    }
+   ],
+   "objects": [
+    {
+     "room": "玄关",
+     "objects": [
+      "a slim shoe cabinet along one wall",
+      "a small tray for keys and parcels on top"
+     ]
+    },
+    {
+     "room": "客厅",
+     "objects": [
+      "a large comfortable sofa with a coffee table for guests",
+      "a low toy basket beside the sofa"
+     ]
+    },
+    {
+     "room": "餐厅",
+     "objects": [
+      "a dining table with four chairs"
+     ]
+    },
+    {
+     "room": "厨房",
+     "objects": [
+      "everyday cooking clutter: pots, jars and small appliances along the counter"
+     ]
+    },
+    {
+     "room": "主卧",
+     "objects": [
+      "a small armchair and reading lamp by the bay window",
+      "bedside tables with warm lamps"
+     ]
+    },
+    {
+     "room": "次卧",
+     "objects": [
+      "a neatly made guest bed",
+      "a storage cabinet for seasonal things"
+     ]
+    },
+    {
+     "room": "小孩房",
+     "objects": [
+      "low open toy shelves the child can reach",
+      "a small study desk with a child's chair"
+     ]
+    },
+    {
+     "room": "阳台",
+     "objects": [
+      "a washing machine with a storage cabinet beside it",
+      "laundry drying on a rod"
+     ]
+    }
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and the rooms are filled with the small everyday objects this household actually uses — the exact objects for each room are listed in the instructions, never invented. Some daily-life spots carry small handwritten Chinese notes joined to their object by a quickly drawn arrow; the wording of every note is given in the instructions, never invented. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. The plan fills the frame with even margins of blank textured paper; the room names and the small notes are written into the drawing itself, so no blank band is reserved.\nCoordinates in this prompt are written as <point>x y</point> in the frame of input image 1: x runs 0-999 left to right, y runs 0-999 top to bottom, the image width and height each divided into 1000 equal units.\nRoom allocation (follow it exactly; draw furniture appropriate to each room's function, plus ONLY the everyday-life objects listed below): lower-center is the 客厅 at <point>522 689</point>; lower-left is the 主卧 at <point>190 804</point>; lower-right is the 次卧 at <point>821 729</point>; upper-left is the 小孩房 at <point>190 333</point>; middle-center is the 餐厅 at <point>492 364</point>; upper-center is the 厨房 at <point>599 146</point>; middle-left is the 卫生间 at <point>190 542</point>; middle-right is the 玄关 at <point>781 513</point>; lower-center is the 阳台 at <point>501 936</point>.\nEveryday-life objects per room (this list is the ONLY source of daily-life props: draw for each room exactly the objects listed for it; do not invent pets, hobbies, appliances or gadgets that are not listed; a room that is not listed gets only furniture appropriate to its function and nothing else):\n- 玄关: a slim shoe cabinet along one wall; a small tray for keys and parcels on top\n- 客厅: a large comfortable sofa with a coffee table for guests; a low toy basket beside the sofa\n- 餐厅: a dining table with four chairs\n- 厨房: everyday cooking clutter: pots, jars and small appliances along the counter\n- 主卧: a small armchair and reading lamp by the bay window; bedside tables with warm lamps\n- 次卧: a neatly made guest bed; a storage cabinet for seasonal things\n- 小孩房: low open toy shelves the child can reach; a small study desk with a child's chair\n- 阳台: a washing machine with a storage cabinet beside it; laundry drying on a rod\nHand-write each room's Chinese name inside that room, centered on the coordinate given for it, using EXACTLY the characters given for that room — no substitutes, no simplification, no extra characters in the name: 客厅 at <point>522 689</point>、主卧 at <point>190 804</point>、次卧 at <point>821 729</point>、小孩房 at <point>190 333</point>、餐厅 at <point>492 364</point>、厨房 at <point>599 146</point>、卫生间 at <point>190 542</point>、玄关 at <point>781 513</point>、阳台 at <point>501 936</point>. Black handwritten marker, size and angle varying slightly between rooms, no printed typeface, no label box, no underline, no pinyin, no English translation.\nAlso hand-write these owner's notes, each inside the room named for it, near the given coordinate, in a smaller and more casual handwriting than the room names, each joined by a short quickly-drawn arrow to the object in that room it talks about. Write EXACTLY the characters given for each note — no substitutes, no additions, no rewording:\n- in the 客厅 near <point>522 689</point>: 客厅是家里最大的地方，朋友来了也坐得开～\n- in the 主卧 near <point>190 804</point>: 主卧飘窗朝南，赖床的周末睁眼就是太阳～\n- in the 小孩房 near <point>190 333</point>: 小孩房方方正正，床和书桌各归各位，好摆～\n- in the 卫生间 near <point>190 542</point>: 卫生间没有窗，排风做扎实些，洗完澡也不闷\n- in the 阳台 near <point>501 936</point>: 洗衣机就归阳台，洗完抬手就晾上啦\nWrite NO text anywhere in the image except the room names and the notes given above: no invented notes or labels, no numbers, no English words, no watermarks, no title.\nAvoid: professional CAD drawing or estate-agent standard floor plan\nAvoid: 3D perspective, isometric views, photorealistic or CGI rendering\nAvoid: flat vector icon style\nAvoid: printed computer typefaces, ruled label boxes, evenly spaced captions\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends\nAvoid: cold minimalism, luxury show-flat polish, glossy gradients\nAvoid: over-tidy machine-perfect edges\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, gardens, gyms or walk-in closets that are not in the source plan\nAvoid: page borders, frames, decorative corners\nAvoid: handwritten notes, labels or captions whose text is not given in the instructions",
+  "hidden": [
+   "105 字全对；小孩房没画床"
+  ],
+  "extra": {},
+  "archived": "images/0901-notebook-注释版-跑二.png",
+  "sha256": "cf11b1d7aaaa3e1e"
+ },
+ {
+  "id": "0901-notebook-注释版v2-跑一",
+  "group": "风格图",
+  "kind": "风格图 注释版 v2",
+  "date": "2026-09-01 15:31",
+  "title": "注释版 v2 跑一（槽位改全集）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "五条注释逐字、各落在自己的房间；槽位 v2 是全集，列的都要画出来、不许多画"
+   ],
+   "annotations": [
+    {
+     "room": "客厅",
+     "text": "客厅是家里最大的地方，朋友来了也坐得开～"
+    },
+    {
+     "room": "主卧",
+     "text": "主卧飘窗朝南，赖床的周末睁眼就是太阳～"
+    },
+    {
+     "room": "小孩房",
+     "text": "小孩房方方正正，床和书桌各归各位，好摆～"
+    },
+    {
+     "room": "卫生间",
+     "text": "卫生间没有窗，排风做扎实些，洗完澡也不闷"
+    },
+    {
+     "room": "阳台",
+     "text": "洗衣机就归阳台，洗完抬手就晾上啦"
+    }
+   ],
+   "objects": [
+    {
+     "room": "玄关",
+     "objects": [
+      "a slim shoe cabinet along one wall",
+      "a small tray for keys and parcels on top"
+     ]
+    },
+    {
+     "room": "客厅",
+     "objects": [
+      "a large comfortable sofa with a coffee table for guests",
+      "a low toy basket beside the sofa"
+     ]
+    },
+    {
+     "room": "餐厅",
+     "objects": [
+      "a dining table with four chairs"
+     ]
+    },
+    {
+     "room": "厨房",
+     "objects": [
+      "a fitted kitchen counter with hob and sink",
+      "everyday cooking clutter: pots, jars and small appliances along the counter"
+     ]
+    },
+    {
+     "room": "主卧",
+     "objects": [
+      "a large double bed",
+      "a full-height wardrobe",
+      "a small armchair and reading lamp by the bay window",
+      "bedside tables with warm lamps"
+     ]
+    },
+    {
+     "room": "次卧",
+     "objects": [
+      "a neatly made guest bed",
+      "a storage cabinet for seasonal things"
+     ]
+    },
+    {
+     "room": "小孩房",
+     "objects": [
+      "a child's bed",
+      "low open toy shelves the child can reach",
+      "a small study desk with a child's chair"
+     ]
+    },
+    {
+     "room": "卫生间",
+     "objects": [
+      "a toilet",
+      "a washbasin",
+      "a shower corner"
+     ]
+    },
+    {
+     "room": "阳台",
+     "objects": [
+      "a washing machine with a storage cabinet beside it",
+      "laundry drying on a rod"
+     ]
+    }
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and each room contains exactly the furniture and small everyday objects its list in the instructions gives — never invented, never dropped. Some daily-life spots carry small handwritten Chinese notes joined to their object by a quickly drawn arrow; the wording of every note is given in the instructions, never invented. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. The plan fills the frame with even margins of blank textured paper; the room names and the small notes are written into the drawing itself, so no blank band is reserved.\nCoordinates in this prompt are written as <point>x y</point> in the frame of input image 1: x runs 0-999 left to right, y runs 0-999 top to bottom, the image width and height each divided into 1000 equal units.\nRoom allocation (follow it exactly; each room's complete contents are listed below; draw in each room exactly its list, nothing more): lower-center is the 客厅 at <point>522 689</point>; lower-left is the 主卧 at <point>190 804</point>; lower-right is the 次卧 at <point>821 729</point>; upper-left is the 小孩房 at <point>190 333</point>; middle-center is the 餐厅 at <point>492 364</point>; upper-center is the 厨房 at <point>599 146</point>; middle-left is the 卫生间 at <point>190 542</point>; middle-right is the 玄关 at <point>781 513</point>; lower-center is the 阳台 at <point>501 936</point>.\nContents of each room (each list is the COMPLETE inventory for that room, functional furniture included: draw EVERY object listed for the room — a bed, a table or a toilet in a list must appear in the drawing — and draw NOTHING in a room that its list does not name; do not invent pets, hobbies, appliances or gadgets):\n- 玄关: a slim shoe cabinet along one wall; a small tray for keys and parcels on top\n- 客厅: a large comfortable sofa with a coffee table for guests; a low toy basket beside the sofa\n- 餐厅: a dining table with four chairs\n- 厨房: a fitted kitchen counter with hob and sink; everyday cooking clutter: pots, jars and small appliances along the counter\n- 主卧: a large double bed; a full-height wardrobe; a small armchair and reading lamp by the bay window; bedside tables with warm lamps\n- 次卧: a neatly made guest bed; a storage cabinet for seasonal things\n- 小孩房: a child's bed; low open toy shelves the child can reach; a small study desk with a child's chair\n- 卫生间: a toilet; a washbasin; a shower corner\n- 阳台: a washing machine with a storage cabinet beside it; laundry drying on a rod\nHand-write each room's Chinese name inside that room, centered on the coordinate given for it, using EXACTLY the characters given for that room — no substitutes, no simplification, no extra characters in the name: 客厅 at <point>522 689</point>、主卧 at <point>190 804</point>、次卧 at <point>821 729</point>、小孩房 at <point>190 333</point>、餐厅 at <point>492 364</point>、厨房 at <point>599 146</point>、卫生间 at <point>190 542</point>、玄关 at <point>781 513</point>、阳台 at <point>501 936</point>. Black handwritten marker, size and angle varying slightly between rooms, no printed typeface, no label box, no underline, no pinyin, no English translation.\nAlso hand-write these owner's notes, each inside the room named for it, near the given coordinate, in a smaller and more casual handwriting than the room names, each joined by a short quickly-drawn arrow to the object in that room it talks about. Write EXACTLY the characters given for each note — no substitutes, no additions, no rewording:\n- in the 客厅 near <point>522 689</point>: 客厅是家里最大的地方，朋友来了也坐得开～\n- in the 主卧 near <point>190 804</point>: 主卧飘窗朝南，赖床的周末睁眼就是太阳～\n- in the 小孩房 near <point>190 333</point>: 小孩房方方正正，床和书桌各归各位，好摆～\n- in the 卫生间 near <point>190 542</point>: 卫生间没有窗，排风做扎实些，洗完澡也不闷\n- in the 阳台 near <point>501 936</point>: 洗衣机就归阳台，洗完抬手就晾上啦\nWrite NO text anywhere in the image except the room names and the notes given above: no invented notes or labels, no numbers, no English words, no watermarks, no title.\nAvoid: professional CAD drawing or estate-agent standard floor plan\nAvoid: 3D perspective, isometric views, photorealistic or CGI rendering\nAvoid: flat vector icon style\nAvoid: printed computer typefaces, ruled label boxes, evenly spaced captions\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends\nAvoid: cold minimalism, luxury show-flat polish, glossy gradients\nAvoid: over-tidy machine-perfect edges\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, gardens, gyms or walk-in closets that are not in the source plan\nAvoid: page borders, frames, decorative corners\nAvoid: handwritten notes, labels or captions whose text is not given in the instructions",
+  "hidden": [
+   "错字零；三跑排序第一；已真机发业主"
+  ],
+  "extra": {
+   "run": {
+    "tag": "v2",
+    "started": "2026-09-01T15:14:18",
+    "target_key": "uploads/e2a41bfefa2488a157e2335baeb5255306bb43b0c0f014fc86e729e9b4fea514/atmosphere-lifestyle-notebook-annotated-v2.png",
+    "bytes": 861965,
+    "content_type": "image/jpeg",
+    "plan_etags": {
+     "plan-master.png": "860D40E04E2E847DDA49DD585447CA3B",
+     "plan-rooms.json": "D58556F846035D8123406812E9B22F25"
+    },
+    "revised_prompt": ""
+   }
+  },
+  "archived": "images/0901-notebook-注释版v2-跑一.png",
+  "sha256": "2022829eb9e3df2a"
+ },
+ {
+  "id": "0901-notebook-注释版v2-跑二",
+  "group": "风格图",
+  "kind": "风格图 注释版 v2",
+  "date": "2026-09-01 15:31",
+  "title": "注释版 v2 跑二（槽位改全集）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "五条注释逐字、各落在自己的房间；槽位 v2 是全集，列的都要画出来、不许多画"
+   ],
+   "annotations": [
+    {
+     "room": "客厅",
+     "text": "客厅是家里最大的地方，朋友来了也坐得开～"
+    },
+    {
+     "room": "主卧",
+     "text": "主卧飘窗朝南，赖床的周末睁眼就是太阳～"
+    },
+    {
+     "room": "小孩房",
+     "text": "小孩房方方正正，床和书桌各归各位，好摆～"
+    },
+    {
+     "room": "卫生间",
+     "text": "卫生间没有窗，排风做扎实些，洗完澡也不闷"
+    },
+    {
+     "room": "阳台",
+     "text": "洗衣机就归阳台，洗完抬手就晾上啦"
+    }
+   ],
+   "objects": [
+    {
+     "room": "玄关",
+     "objects": [
+      "a slim shoe cabinet along one wall",
+      "a small tray for keys and parcels on top"
+     ]
+    },
+    {
+     "room": "客厅",
+     "objects": [
+      "a large comfortable sofa with a coffee table for guests",
+      "a low toy basket beside the sofa"
+     ]
+    },
+    {
+     "room": "餐厅",
+     "objects": [
+      "a dining table with four chairs"
+     ]
+    },
+    {
+     "room": "厨房",
+     "objects": [
+      "a fitted kitchen counter with hob and sink",
+      "everyday cooking clutter: pots, jars and small appliances along the counter"
+     ]
+    },
+    {
+     "room": "主卧",
+     "objects": [
+      "a large double bed",
+      "a full-height wardrobe",
+      "a small armchair and reading lamp by the bay window",
+      "bedside tables with warm lamps"
+     ]
+    },
+    {
+     "room": "次卧",
+     "objects": [
+      "a neatly made guest bed",
+      "a storage cabinet for seasonal things"
+     ]
+    },
+    {
+     "room": "小孩房",
+     "objects": [
+      "a child's bed",
+      "low open toy shelves the child can reach",
+      "a small study desk with a child's chair"
+     ]
+    },
+    {
+     "room": "卫生间",
+     "objects": [
+      "a toilet",
+      "a washbasin",
+      "a shower corner"
+     ]
+    },
+    {
+     "room": "阳台",
+     "objects": [
+      "a washing machine with a storage cabinet beside it",
+      "laundry drying on a rod"
+     ]
+    }
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and each room contains exactly the furniture and small everyday objects its list in the instructions gives — never invented, never dropped. Some daily-life spots carry small handwritten Chinese notes joined to their object by a quickly drawn arrow; the wording of every note is given in the instructions, never invented. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. The plan fills the frame with even margins of blank textured paper; the room names and the small notes are written into the drawing itself, so no blank band is reserved.\nCoordinates in this prompt are written as <point>x y</point> in the frame of input image 1: x runs 0-999 left to right, y runs 0-999 top to bottom, the image width and height each divided into 1000 equal units.\nRoom allocation (follow it exactly; each room's complete contents are listed below; draw in each room exactly its list, nothing more): lower-center is the 客厅 at <point>522 689</point>; lower-left is the 主卧 at <point>190 804</point>; lower-right is the 次卧 at <point>821 729</point>; upper-left is the 小孩房 at <point>190 333</point>; middle-center is the 餐厅 at <point>492 364</point>; upper-center is the 厨房 at <point>599 146</point>; middle-left is the 卫生间 at <point>190 542</point>; middle-right is the 玄关 at <point>781 513</point>; lower-center is the 阳台 at <point>501 936</point>.\nContents of each room (each list is the COMPLETE inventory for that room, functional furniture included: draw EVERY object listed for the room — a bed, a table or a toilet in a list must appear in the drawing — and draw NOTHING in a room that its list does not name; do not invent pets, hobbies, appliances or gadgets):\n- 玄关: a slim shoe cabinet along one wall; a small tray for keys and parcels on top\n- 客厅: a large comfortable sofa with a coffee table for guests; a low toy basket beside the sofa\n- 餐厅: a dining table with four chairs\n- 厨房: a fitted kitchen counter with hob and sink; everyday cooking clutter: pots, jars and small appliances along the counter\n- 主卧: a large double bed; a full-height wardrobe; a small armchair and reading lamp by the bay window; bedside tables with warm lamps\n- 次卧: a neatly made guest bed; a storage cabinet for seasonal things\n- 小孩房: a child's bed; low open toy shelves the child can reach; a small study desk with a child's chair\n- 卫生间: a toilet; a washbasin; a shower corner\n- 阳台: a washing machine with a storage cabinet beside it; laundry drying on a rod\nHand-write each room's Chinese name inside that room, centered on the coordinate given for it, using EXACTLY the characters given for that room — no substitutes, no simplification, no extra characters in the name: 客厅 at <point>522 689</point>、主卧 at <point>190 804</point>、次卧 at <point>821 729</point>、小孩房 at <point>190 333</point>、餐厅 at <point>492 364</point>、厨房 at <point>599 146</point>、卫生间 at <point>190 542</point>、玄关 at <point>781 513</point>、阳台 at <point>501 936</point>. Black handwritten marker, size and angle varying slightly between rooms, no printed typeface, no label box, no underline, no pinyin, no English translation.\nAlso hand-write these owner's notes, each inside the room named for it, near the given coordinate, in a smaller and more casual handwriting than the room names, each joined by a short quickly-drawn arrow to the object in that room it talks about. Write EXACTLY the characters given for each note — no substitutes, no additions, no rewording:\n- in the 客厅 near <point>522 689</point>: 客厅是家里最大的地方，朋友来了也坐得开～\n- in the 主卧 near <point>190 804</point>: 主卧飘窗朝南，赖床的周末睁眼就是太阳～\n- in the 小孩房 near <point>190 333</point>: 小孩房方方正正，床和书桌各归各位，好摆～\n- in the 卫生间 near <point>190 542</point>: 卫生间没有窗，排风做扎实些，洗完澡也不闷\n- in the 阳台 near <point>501 936</point>: 洗衣机就归阳台，洗完抬手就晾上啦\nWrite NO text anywhere in the image except the room names and the notes given above: no invented notes or labels, no numbers, no English words, no watermarks, no title.\nAvoid: professional CAD drawing or estate-agent standard floor plan\nAvoid: 3D perspective, isometric views, photorealistic or CGI rendering\nAvoid: flat vector icon style\nAvoid: printed computer typefaces, ruled label boxes, evenly spaced captions\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends\nAvoid: cold minimalism, luxury show-flat polish, glossy gradients\nAvoid: over-tidy machine-perfect edges\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, gardens, gyms or walk-in closets that are not in the source plan\nAvoid: page borders, frames, decorative corners\nAvoid: handwritten notes, labels or captions whose text is not given in the instructions",
+  "hidden": [
+   "客厅一处人脸涂鸦（字与家具全对、凭空多一张小脸）；卫生间缺一样"
+  ],
+  "extra": {
+   "run": {
+    "tag": "v2-2",
+    "started": "2026-09-01T15:15:31",
+    "target_key": "uploads/e2a41bfefa2488a157e2335baeb5255306bb43b0c0f014fc86e729e9b4fea514/atmosphere-lifestyle-notebook-annotated-v2-2.png",
+    "bytes": 794717,
+    "content_type": "image/jpeg",
+    "plan_etags": {
+     "plan-master.png": "860D40E04E2E847DDA49DD585447CA3B",
+     "plan-rooms.json": "D58556F846035D8123406812E9B22F25"
+    },
+    "revised_prompt": ""
+   }
+  },
+  "archived": "images/0901-notebook-注释版v2-跑二.png",
+  "sha256": "153683a1545ed2b9"
+ },
+ {
+  "id": "0901-notebook-注释版v2-跑三",
+  "group": "风格图",
+  "kind": "风格图 注释版 v2",
+  "date": "2026-09-01 15:31",
+  "title": "注释版 v2 跑三（槽位改全集）",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "五条注释逐字、各落在自己的房间；槽位 v2 是全集，列的都要画出来、不许多画"
+   ],
+   "annotations": [
+    {
+     "room": "客厅",
+     "text": "客厅是家里最大的地方，朋友来了也坐得开～"
+    },
+    {
+     "room": "主卧",
+     "text": "主卧飘窗朝南，赖床的周末睁眼就是太阳～"
+    },
+    {
+     "room": "小孩房",
+     "text": "小孩房方方正正，床和书桌各归各位，好摆～"
+    },
+    {
+     "room": "卫生间",
+     "text": "卫生间没有窗，排风做扎实些，洗完澡也不闷"
+    },
+    {
+     "room": "阳台",
+     "text": "洗衣机就归阳台，洗完抬手就晾上啦"
+    }
+   ],
+   "objects": [
+    {
+     "room": "玄关",
+     "objects": [
+      "a slim shoe cabinet along one wall",
+      "a small tray for keys and parcels on top"
+     ]
+    },
+    {
+     "room": "客厅",
+     "objects": [
+      "a large comfortable sofa with a coffee table for guests",
+      "a low toy basket beside the sofa"
+     ]
+    },
+    {
+     "room": "餐厅",
+     "objects": [
+      "a dining table with four chairs"
+     ]
+    },
+    {
+     "room": "厨房",
+     "objects": [
+      "a fitted kitchen counter with hob and sink",
+      "everyday cooking clutter: pots, jars and small appliances along the counter"
+     ]
+    },
+    {
+     "room": "主卧",
+     "objects": [
+      "a large double bed",
+      "a full-height wardrobe",
+      "a small armchair and reading lamp by the bay window",
+      "bedside tables with warm lamps"
+     ]
+    },
+    {
+     "room": "次卧",
+     "objects": [
+      "a neatly made guest bed",
+      "a storage cabinet for seasonal things"
+     ]
+    },
+    {
+     "room": "小孩房",
+     "objects": [
+      "a child's bed",
+      "low open toy shelves the child can reach",
+      "a small study desk with a child's chair"
+     ]
+    },
+    {
+     "room": "卫生间",
+     "objects": [
+      "a toilet",
+      "a washbasin",
+      "a shower corner"
+     ]
+    },
+    {
+     "room": "阳台",
+     "objects": [
+      "a washing machine with a storage cabinet beside it",
+      "laundry drying on a rod"
+     ]
+    }
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": "Use case: style-transfer of an architectural floor plan.\nInput image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.\nStyle: a lifestyle journal floor plan drawn by hand on textured paper. Outer walls and partition walls in rough, natural black marker; furniture in a finer hand-drawn line. Every line keeps a slight wobble, doubled-back strokes and honest drafting errors. A pale grey square grid over the floor. Rooms are told apart by local colour: pale mint green, cream beige, terracotta orange, sky blue, soft pink and grass green. Colour is laid in with coloured pencil and light markers, keeping the paper grain, visible hatching, uneven fill and a faint scanner shadow. Furniture is drawn as simple, cute, slightly clumsy top-down illustrations, and each room contains exactly the furniture and small everyday objects its list in the instructions gives — never invented, never dropped. Some daily-life spots carry small handwritten Chinese notes joined to their object by a quickly drawn arrow; the wording of every note is given in the instructions, never invented. The whole page reads like an architect's or the owner's own warm, relaxed, detail-rich life proposal in a personal journal — it is about how life will be lived here, not about drafting accuracy.\nComposition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. The plan fills the frame with even margins of blank textured paper; the room names and the small notes are written into the drawing itself, so no blank band is reserved.\nCoordinates in this prompt are written as <point>x y</point> in the frame of input image 1: x runs 0-999 left to right, y runs 0-999 top to bottom, the image width and height each divided into 1000 equal units.\nRoom allocation (follow it exactly; each room's complete contents are listed below; draw in each room exactly its list, nothing more): lower-center is the 客厅 at <point>522 689</point>; lower-left is the 主卧 at <point>190 804</point>; lower-right is the 次卧 at <point>821 729</point>; upper-left is the 小孩房 at <point>190 333</point>; middle-center is the 餐厅 at <point>492 364</point>; upper-center is the 厨房 at <point>599 146</point>; middle-left is the 卫生间 at <point>190 542</point>; middle-right is the 玄关 at <point>781 513</point>; lower-center is the 阳台 at <point>501 936</point>.\nContents of each room (each list is the COMPLETE inventory for that room, functional furniture included: draw EVERY object listed for the room — a bed, a table or a toilet in a list must appear in the drawing — and draw NOTHING in a room that its list does not name; do not invent pets, hobbies, appliances or gadgets):\n- 玄关: a slim shoe cabinet along one wall; a small tray for keys and parcels on top\n- 客厅: a large comfortable sofa with a coffee table for guests; a low toy basket beside the sofa\n- 餐厅: a dining table with four chairs\n- 厨房: a fitted kitchen counter with hob and sink; everyday cooking clutter: pots, jars and small appliances along the counter\n- 主卧: a large double bed; a full-height wardrobe; a small armchair and reading lamp by the bay window; bedside tables with warm lamps\n- 次卧: a neatly made guest bed; a storage cabinet for seasonal things\n- 小孩房: a child's bed; low open toy shelves the child can reach; a small study desk with a child's chair\n- 卫生间: a toilet; a washbasin; a shower corner\n- 阳台: a washing machine with a storage cabinet beside it; laundry drying on a rod\nHand-write each room's Chinese name inside that room, centered on the coordinate given for it, using EXACTLY the characters given for that room — no substitutes, no simplification, no extra characters in the name: 客厅 at <point>522 689</point>、主卧 at <point>190 804</point>、次卧 at <point>821 729</point>、小孩房 at <point>190 333</point>、餐厅 at <point>492 364</point>、厨房 at <point>599 146</point>、卫生间 at <point>190 542</point>、玄关 at <point>781 513</point>、阳台 at <point>501 936</point>. Black handwritten marker, size and angle varying slightly between rooms, no printed typeface, no label box, no underline, no pinyin, no English translation.\nAlso hand-write these owner's notes, each inside the room named for it, near the given coordinate, in a smaller and more casual handwriting than the room names, each joined by a short quickly-drawn arrow to the object in that room it talks about. Write EXACTLY the characters given for each note — no substitutes, no additions, no rewording:\n- in the 客厅 near <point>522 689</point>: 客厅是家里最大的地方，朋友来了也坐得开～\n- in the 主卧 near <point>190 804</point>: 主卧飘窗朝南，赖床的周末睁眼就是太阳～\n- in the 小孩房 near <point>190 333</point>: 小孩房方方正正，床和书桌各归各位，好摆～\n- in the 卫生间 near <point>190 542</point>: 卫生间没有窗，排风做扎实些，洗完澡也不闷\n- in the 阳台 near <point>501 936</point>: 洗衣机就归阳台，洗完抬手就晾上啦\nWrite NO text anywhere in the image except the room names and the notes given above: no invented notes or labels, no numbers, no English words, no watermarks, no title.\nAvoid: professional CAD drawing or estate-agent standard floor plan\nAvoid: 3D perspective, isometric views, photorealistic or CGI rendering\nAvoid: flat vector icon style\nAvoid: printed computer typefaces, ruled label boxes, evenly spaced captions\nAvoid: dimension lines, measurement arrows, scale bars, north arrows, engineering symbols, legends\nAvoid: cold minimalism, luxury show-flat polish, glossy gradients\nAvoid: over-tidy machine-perfect edges\nAvoid: furniture blocking a door opening or a main circulation path\nAvoid: adding rooms, gardens, gyms or walk-in closets that are not in the source plan\nAvoid: page borders, frames, decorative corners\nAvoid: handwritten notes, labels or captions whose text is not given in the instructions",
+  "hidden": [
+   "阳台晾衣杆整缺；卫生间缺一样；三跑排序第三"
+  ],
+  "extra": {
+   "run": {
+    "tag": "v2-3",
+    "started": "2026-09-01T15:16:39",
+    "target_key": "uploads/e2a41bfefa2488a157e2335baeb5255306bb43b0c0f014fc86e729e9b4fea514/atmosphere-lifestyle-notebook-annotated-v2-3.png",
+    "bytes": 854567,
+    "content_type": "image/jpeg",
+    "plan_etags": {
+     "plan-master.png": "860D40E04E2E847DDA49DD585447CA3B",
+     "plan-rooms.json": "D58556F846035D8123406812E9B22F25"
+    },
+    "revised_prompt": ""
+   }
+  },
+  "archived": "images/0901-notebook-注释版v2-跑三.png",
+  "sha256": "08f87ef55fb0c70c"
+ },
+ {
+  "id": "0904-run8-notebook-handwritten",
+  "group": "风格图",
+  "kind": "风格图 手账写字版（串联真派发）",
+  "date": "2026-09-04 12:21",
+  "title": "今天串联第 8 跑：手账写字版",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "lifestyle-notebook-handwritten（手账写字版）：房间名与注释手写进图；不许印刷字体、标签框、等距排布的说明；不许加房间；不许尺寸线、图例、边框",
+    "九个房间名逐字正确；派发注释在桶里未取回，注释内容以图上可辨为准"
+   ]
+  },
+  "template": "lifestyle-notebook-handwritten",
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "note": "会话侧→业务侧→编排→三张图全链真派发，八跑里唯一成的一跑"
+  },
+  "archived": "images/0904-run8-notebook-handwritten.jpg",
+  "sha256": "3d750e254b234eb3"
+ },
+ {
+  "id": "0904-run8-cream-journal-叠字",
+  "group": "风格图",
+  "kind": "风格图 + 叠字（串联真派发）",
+  "date": "2026-09-04 12:21",
+  "title": "今天串联第 8 跑：cream-journal 叠字",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "cream-journal：顶 24%、底 28% 必须留白（后叠文字）；不许加源图没有的房间/岛台/浴缸/衣帽间/花园；不许尺寸线、比例尺、指北针、图例；不许边框",
+    "叠字必须落在留白带内、不压画面；派发文案在桶里未取回"
+   ]
+  },
+  "template": "cream-journal",
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0904-run8-cream-journal-叠字.png",
+  "sha256": "7b16673a134b221e"
+ },
+ {
+  "id": "0831-功能说明图-首版",
+  "group": "功能说明图",
+  "kind": "功能说明图（确定性绘制）",
+  "date": "2026-08-31 12:53",
+  "title": "8-31 功能说明图首版",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "五条批注每句必须引得到户型事实（cites）；标题/总结/贴士逐字等于派发文案"
+   ],
+   "notes": [
+    {
+     "room": "客厅",
+     "text": "外墙上没窗户，白天要开灯",
+     "cites": [
+      "plan-daylight-客厅"
+     ]
+    },
+    {
+     "room": "玄关",
+     "text": "又窄又小，放鞋柜得精打细算",
+     "cites": [
+      "plan-share-玄关",
+      "plan-shape-玄关"
+     ]
+    },
+    {
+     "room": "阳台",
+     "text": "特别狭长，晾衣杆得贴边装",
+     "cites": [
+      "plan-shape-阳台"
+     ]
+    },
+    {
+     "room": "主卧",
+     "text": "有两扇窗，通风采光更自在",
+     "cites": [
+      "plan-daylight-主卧"
+     ]
+    },
+    {
+     "room": "小孩房",
+     "text": "只有一扇窗，靠窗摆床要注意",
+     "cites": [
+      "plan-daylight-小孩房"
+     ]
+    }
+   ],
+   "copy": {
+    "title": "暖光小院",
+    "summary": "推开家门，每个角落都自然舒展，日子过得松快又踏实。",
+    "tips": [
+     "玄关虽小，放个换鞋凳和挂钩，进门就安心",
+     "阳台窄长，选细腿家具，晾晒和小憩两不误",
+     "厨房和卫生间都有窗，通风顺手，做饭洗澡都清爽"
+    ]
+   }
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0831-功能说明图-首版.png",
+  "sha256": "bd57e1315a22d546"
+ },
+ {
+  "id": "0901-功能说明图-按段厚度",
+  "group": "功能说明图",
+  "kind": "功能说明图（确定性绘制）",
+  "date": "2026-09-01",
+  "title": "9-01 墙线按段厚度修后",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "墙线厚度按段、次卧右墙不许出现宽带；外圈闭合率 ≥ 0.90"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [
+   "次卧右墙 51px 宽带已修（定罪＝网格投票一条线只给一个厚度）；修后与别处外墙同宽、闭合率不降"
+  ],
+  "extra": {},
+  "archived": "images/0901-功能说明图-按段厚度.png",
+  "sha256": "e64e9b7ec18b3695"
+ },
+ {
+  "id": "0904-run8-功能说明图",
+  "group": "功能说明图",
+  "kind": "功能说明图（串联真派发）",
+  "date": "2026-09-04 12:21",
+  "title": "今天串联第 8 跑：功能说明图",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "批注与文案由本跑派发（在桶里未取回），以图上可辨为准"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0904-run8-功能说明图.png",
+  "sha256": "95f61c4880aa1d82"
+ },
+ {
+  "id": "0901-母版-按段厚度",
+  "group": "母版",
+  "kind": "母版（零模型调用）",
+  "date": "2026-09-01",
+  "title": "母版：几何→线稿",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "同一份几何画两次逐字节相同；外圈闭合率 ≥ 0.90 否则整张不出"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {},
+  "archived": "images/0901-母版-按段厚度.png",
+  "sha256": "9ad5b7d85de4a298"
+ },
+ {
+  "id": "0901-蓝图样张-双线淡芯-信息排底",
+  "group": "说明图样张",
+  "kind": "功能说明图 制图蓝图方向样张",
+  "date": "2026-09-01 15:41",
+  "title": "制图蓝图样张：双线淡芯-信息排底",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "拍板改进三条：墙体不要实心粗带、左右留白、补信息层（标题栏/图例/占比表）"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "note": "等业主挑版的三张之一；这里只判错没错，不判好不好看"
+  },
+  "archived": "images/0901-蓝图样张-双线淡芯-信息排底.png",
+  "sha256": "32886c356d22ec31"
+ },
+ {
+  "id": "0901-蓝图样张-双线淡芯-信息排侧",
+  "group": "说明图样张",
+  "kind": "功能说明图 制图蓝图方向样张",
+  "date": "2026-09-01 15:41",
+  "title": "制图蓝图样张：双线淡芯-信息排侧",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "拍板改进三条：墙体不要实心粗带、左右留白、补信息层（标题栏/图例/占比表）"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "note": "等业主挑版的三张之一；这里只判错没错，不判好不好看"
+  },
+  "archived": "images/0901-蓝图样张-双线淡芯-信息排侧.png",
+  "sha256": "5b8d69ee9f7764c8"
+ },
+ {
+  "id": "0901-蓝图样张-双线剖面纹-信息排侧",
+  "group": "说明图样张",
+  "kind": "功能说明图 制图蓝图方向样张",
+  "date": "2026-09-01 15:41",
+  "title": "制图蓝图样张：双线剖面纹-信息排侧",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "拍板改进三条：墙体不要实心粗带、左右留白、补信息层（标题栏/图例/占比表）"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "note": "等业主挑版的三张之一；这里只判错没错，不判好不好看"
+  },
+  "archived": "images/0901-蓝图样张-双线剖面纹-信息排侧.png",
+  "sha256": "759a062ce4144136"
+ },
+ {
+  "id": "0831-模型评估-seedream5pro-cn",
+  "group": "模型评估",
+  "kind": "出图模型评估（同一派发、换模型）",
+  "date": "2026-08-31 晚",
+  "title": "模型评估：Seedream 5.0 pro，写中文房间名",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "同一份派发换模型；写中文的那两张要求九个房间名逐字正确落对房间；其余零文字"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "model": "doubao-seedream-5-0-pro-260628",
+   "seconds": 112.4
+  },
+  "archived": "images/0831-模型评估-seedream5pro-cn.png",
+  "sha256": "885f4231fba1c2fd"
+ },
+ {
+  "id": "0831-模型评估-seedream5pro-cream-explicit",
+  "group": "模型评估",
+  "kind": "出图模型评估（同一派发、换模型）",
+  "date": "2026-08-31 晚",
+  "title": "模型评估：Seedream 5.0 pro，cream 显式尺寸",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "同一份派发换模型；写中文的那两张要求九个房间名逐字正确落对房间；其余零文字"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "model": "doubao-seedream-5-0-pro-260628",
+   "seconds": 109.6
+  },
+  "archived": "images/0831-模型评估-seedream5pro-cream-explicit.png",
+  "sha256": "b3130e44c82a025f"
+ },
+ {
+  "id": "0831-模型评估-seedream50-cream",
+  "group": "模型评估",
+  "kind": "出图模型评估（同一派发、换模型）",
+  "date": "2026-08-31 晚",
+  "title": "模型评估：Seedream 5.0，cream",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "同一份派发换模型；写中文的那两张要求九个房间名逐字正确落对房间；其余零文字"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "model": "doubao-seedream-5-0-260128",
+   "seconds": 65.8
+  },
+  "archived": "images/0831-模型评估-seedream50-cream.png",
+  "sha256": "6a7a76f6b4f736fb"
+ },
+ {
+  "id": "0831-模型评估-seedream50-pencil",
+  "group": "模型评估",
+  "kind": "出图模型评估（同一派发、换模型）",
+  "date": "2026-08-31 晚",
+  "title": "模型评估：Seedream 5.0，彩铅",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "同一份派发换模型；写中文的那两张要求九个房间名逐字正确落对房间；其余零文字"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "model": "doubao-seedream-5-0-260128",
+   "seconds": 57.1
+  },
+  "archived": "images/0831-模型评估-seedream50-pencil.png",
+  "sha256": "44a3d34ce16b7989"
+ },
+ {
+  "id": "0831-模型评估-qwen-edit-max-cn",
+  "group": "模型评估",
+  "kind": "出图模型评估（同一派发、换模型）",
+  "date": "2026-08-31 晚",
+  "title": "模型评估：Qwen image edit max，写中文房间名",
+  "ref": {
+   "rooms": [
+    "客厅",
+    "主卧",
+    "次卧",
+    "小孩房",
+    "餐厅",
+    "厨房",
+    "卫生间",
+    "玄关",
+    "阳台"
+   ],
+   "rules": [
+    "几何以母版为准：外轮廓、墙位与厚度、房间边界、门窗洞一个不许动、不许加减",
+    "同一份派发换模型；写中文的那两张要求九个房间名逐字正确落对房间；其余零文字"
+   ]
+  },
+  "template": null,
+  "prompt": null,
+  "hidden": [],
+  "extra": {
+   "model": "qwen-image-edit-max",
+   "seconds": 20.7
+  },
+  "archived": "images/0831-模型评估-qwen-edit-max-cn.png",
+  "sha256": "3939f6b6b997c5aa"
+ }
+]

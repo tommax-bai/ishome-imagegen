@@ -1,0 +1,13 @@
+Use case: style-transfer of an architectural floor plan.
+Input image 1 is the ONLY architectural geometry source. Preserve its exact floor-plan outer silhouette, wall positions and thicknesses, room boundaries, door openings and window openings. Do not move, add or remove any wall, door, window or room. Do not change the outer silhouette.
+Style: warm cream-pink hand-drawn home journal. Soft blush and apricot watercolour washes over warm off-white textured paper, colored-pencil and fine-liner outlines, visible paper grain, gentle drop shadows. Furniture drawn as friendly simplified top-down icons with warm wood tones and cream upholstery. The mood is a young homeowner's beautifully drawn keepsake page, not a sales-office poster and not a technical drawing.
+Composition: strict orthographic top-down 2D floor plan, no perspective, no isometric, no 3D. Vertical portrait orientation. RESERVE BLANK PAPER FOR TEXT THAT WILL BE ADDED LATER: the top 24% and the bottom 28% of the image must be completely empty textured paper — no drawing, no furniture, no decoration, no border, nothing at all in those bands. The floor plan is drawn only inside the middle band, with even side margins.
+Room allocation (follow it exactly; draw furniture appropriate to each room's function and nothing else): lower-center is the 客厅; lower-left is the 主卧; lower-right is the 次卧; upper-left is the 小孩房; middle-center is the 餐厅; upper-center is the 厨房; middle-left is the 卫生间; middle-right is the 玄关; lower-center is the 阳台.
+Render NO text of any kind: no letters, no Chinese characters, no numbers, no labels, no captions, no watermarks.
+Avoid: perspective, isometric or 3D views
+Avoid: photographic or CGI rendering
+Avoid: furniture blocking a door opening or a main circulation path
+Avoid: adding rooms, islands, bathtubs, walk-in closets, gardens or gyms that are not in the source plan
+Avoid: dimension lines, measurement arrows, scale bars, north arrows, legends
+Avoid: page borders, frames, decorative corners
+Avoid: drawing, decoration or stickers inside the reserved blank bands at top and bottom

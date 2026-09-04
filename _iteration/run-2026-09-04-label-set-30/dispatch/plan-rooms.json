@@ -1,0 +1,56 @@
+[
+  {
+    "name": "客厅",
+    "mask_index": 1,
+    "anchor_x_px": 689,
+    "anchor_y_px": 1103
+  },
+  {
+    "name": "主卧",
+    "mask_index": 2,
+    "anchor_x_px": 251,
+    "anchor_y_px": 1287
+  },
+  {
+    "name": "次卧",
+    "mask_index": 3,
+    "anchor_x_px": 1084,
+    "anchor_y_px": 1166
+  },
+  {
+    "name": "小孩房",
+    "mask_index": 4,
+    "anchor_x_px": 251,
+    "anchor_y_px": 533
+  },
+  {
+    "name": "餐厅",
+    "mask_index": 5,
+    "anchor_x_px": 650,
+    "anchor_y_px": 583
+  },
+  {
+    "name": "厨房",
+    "mask_index": 6,
+    "anchor_x_px": 791,
+    "anchor_y_px": 233
+  },
+  {
+    "name": "卫生间",
+    "mask_index": 7,
+    "anchor_x_px": 251,
+    "anchor_y_px": 868
+  },
+  {
+    "name": "玄关",
+    "mask_index": 8,
+    "anchor_x_px": 1031,
+    "anchor_y_px": 821
+  },
+  {
+    "name": "阳台",
+    "mask_index": 9,
+    "anchor_x_px": 661,
+    "anchor_y_px": 1497
+  }
+]
