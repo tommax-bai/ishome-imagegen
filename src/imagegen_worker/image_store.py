@@ -142,7 +142,14 @@ def atmosphere_visual_key_of(master_object_key: str, template_id: str, image_byt
 
 
 def check_camera_id(camera_id: str) -> None:
-    """机位 id 能不能当对象键的一段用（同模板 id 的口径）。"""
+    """机位 id 能不能当对象键的一段用（同模板 id 的口径：只收 `[a-z0-9-]`）。
+
+    **与 render3d 不一致（待拍，不是裁决）**：render3d `object_store.check_key_segment` 不限定
+    字符集，拟真包里的室内机位 id 带房间名（`cam-room-客厅`），到这里会被拦下——而且是在
+    `put_realism_visual` 写桶那一步才拦，图已经出了。两种统一方向：机位 id 一律 ASCII slug、
+    房间名另存字段（render3d `CameraSpec.room` 已有）；或本仓放宽到 render3d 那条口径（只拦空、
+    `/`、`..`、首尾空白、控制字符）。拍板前**行为不动**。
+    """
     if not _TEMPLATE_ID_PATTERN.match(camera_id):
         raise ImageStoreError(
             [f"机位 id 当不了对象键的一段（只收小写字母数字与连字符）：`{camera_id}`"]

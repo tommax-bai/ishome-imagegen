@@ -34,9 +34,9 @@ uv run imagegen-worker                       # 监听 imagegen-activities（TEMP
 
 出参 `verdict=ok` 时给 `image_object_key` / `bucket` / `content_type` / `image_size_bytes` / `room_count` / `prompt` / `revised_prompt`；失败时给 `violations`（逐条，不空替不静默）。
 
-- **产物键**：`uploads/{content_sha256}/atmosphere-{template_id}.png`——**与源图同前缀**，由母版键确定性派生，同母版同模板重跑覆盖同一个对象（唯一真源＝contracts `registries/object_keys.md`，本仓持逐字副本 + 守门测试）。
+- **产物键**：`uploads/{content_sha256}/atmosphere-{template_id}.{ext}`——**与源图同前缀**，由母版键确定性派生，同母版同模板同格式重跑覆盖同一个对象（唯一真源＝contracts `registries/object_keys.md`，本仓持逐字副本 + 守门测试）。
 - **只写不签**：签名是"给谁看、看多久"的事，属业务侧——生成侧不知用户是谁。因此"这张图出没出来"问存储即知，不另立台账。
-- **键的后缀是协议，不是格式断言**：真跑实测网关回来的字节是 **JPEG**，`Content-Type` 因此**按字节首部写**（`image/jpeg`），而键仍是 `.png`——换物理模型是常事（变化轴 3），键跟着模型的输出格式变会让同一张图长出两个对象。
+- **扩展名与 `Content-Type` 同源同判，都按字节首部定**（用户裁决 2026-09-02"标签跟着内容走"）：真跑实测网关回来的字节是 **JPEG**，键就是 `.jpg`、头就是 `image/jpeg`；认不出的首部整条响亮失败，不按文件名猜。此前"键写死 `.png`、只有头跟字节走"的口径被该裁决推翻；**认下的代价**：换一个回不同格式的物理模型（变化轴 3），同一张图的键会换后缀，按旧键取的一侧要认两个名——拍板时摆过这一条，取"诚实"舍"稳定"。
 - **写不进桶就不是 ok**：图出得再好、落不了地也按失败回报——回一个指向空气的键，下游会拿它去发给业主。
 
 ## 写实化（`realism-pass`）
@@ -58,6 +58,7 @@ uv run imagegen-worker                       # 监听 imagegen-activities（TEMP
 **出参** `verdict=ok`：`image_object_key` / `bucket` / `content_type` / `image_size_bytes` + 自证数 `backend_name` / `seed` / `fidelity_score` / `elapsed_seconds` / `prompt_sha256` / `prompt` / `gate`。失败给 `violations` 逐条；门禁不过线（`fidelity-gate-failed`）时自证数照带、**图不进桶**。
 
 - **产物键**：`{线稿键的前缀}/realism-{camera_id}-{style_template_id}.{ext}`——与源线稿同前缀、由源键确定性派生（照风格图那条键的先例），派发方不给 `output_key`、本仓不铸。**键形态待 contracts `registries/object_keys.md` 登记**（render3d 自己的四路键也还没登记）。
+- **机位 id 的字符集与 render3d 不一致（待拍，不是裁决）**：本仓 `image_store.check_camera_id` 只收 `[a-z0-9-]`（同模板 id 的口径），而 render3d `object_store.check_key_segment` **不限定字符集**，拟真包里的室内机位 id 带房间名（`cam-room-客厅`）。这样的机位派到 `realism-pass`，会在写桶那一步（`image-store-failed`）才被拦下——图已经出了、钱已经花了。两种统一方向：①机位 id 一律 ASCII slug，房间名另存字段（render3d `CameraSpec.room` 已有）；②本仓放宽到 render3d 那条口径（只拦空、`/`、`..`、首尾空白、控制字符）。拍板前**本仓行为不动**。
 - **出口门禁**（`RealismGate`）只做两件：算分、与配置里的下限比。分数＝`fidelity_metric`（从 render3d `保真度量.py` 原样搬入：Sobel+NMS+位置/方向双重命中，三常量不动）。**下限 `ISHOME_REALISM_MIN_FIDELITY_SCORE` 不配＝只记录不判**（阈值有数据才定；尺子两条已知限制：分数只能同输出形态横向比——几何全对的底渲自量只有 0.0607；透视视角未自证）。不做重出循环，那是编排的事。
 - **后端只从配置来**：`ISHOME_REALISM_BACKEND`（缺省 `gateway-sketch`＝走网关的线稿控制路），代码里不出现厂商名；自部署 ControlNet 是第二形态，加一个 `RealismBackend` 实现、配置里点名。
 
