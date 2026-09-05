@@ -8,11 +8,15 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
-RenderTier = Literal["preview", "final"]
-"""渲染两档：失效传播默认只重算 preview，final 由用户显式请求或交付节点触发。"""
+ViewKind = Literal["bird", "room"]
+"""写实化的视角：`bird`＝揭顶鸟瞰（调研基准机位），`room`＝室内机位。视角句由它选，不由模型猜。
+
+**渲染没有档位**（用户裁决 2026-09-04：渲染只有一档）——此前这里那个 `RenderTier`
+（preview/final）随存根一起作废，contracts 注册表头上"涉渲染的 activity 参数含 preview/final"
+那句对 realism-pass 不成立，待中控仓回改。"""
 
 RoomLabels = Literal["none", "handwritten"]
 """房间名由谁写。**本仓唯一一处"文字层归谁"的开关**，两档的差别只在提示词文字层那几句。
@@ -209,9 +213,75 @@ class AtmosphereVisualRequest(BaseModel):
     所有画风模板都吃它——家具一致性的底子。"""
 
 
-class RealismPassRequest(BaseModel):
-    """realism-pass 输入：生成式写实化（工厂效果图同用）。"""
+class RealismStyleTemplate(BaseModel):
+    """写实化的风格模板本体：**只有风格文字与禁令**，没有视角、没有几何、没有陈设。
 
-    base_render_artifact_id: str
-    style_ref: str
-    render_tier: RenderTier = "preview"
+    视角句、几何约束句、无陈设句、无文字句都是这条通路的规矩不是风格，固定在 `realism`
+    模块里；模板说的只是"墙面地面天花门窗长什么样、光怎么打"。模板是数据不是代码：
+    本体存 `templates/realism/*.json`，这里只定它的形状。与风格图那套 `StyleTemplate`
+    分开建模，是因为两边的槽位完全不同（那边有构图、留白、文字层；这边没有）。
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="forbid")
+
+    template_id: str
+    style: str
+    """材质与光：墙面、地面、天花、门窗的材质词与光线词，写实渲染的口径。不写家具——默认无陈设。"""
+
+    negatives: list[str] = Field(default_factory=list)
+    """负面约束，逐条给。"""
+
+
+class RealismPassRequest(BaseModel):
+    """realism-pass 输入：一路线稿（桶里）+ 风格模板 id + 视角 → 一张写实图。
+
+    **边界上是不透明字典，进来之后才成模型**（同 atmosphere-visual）：派发方不 import 本仓，
+    两边只靠 contracts 注册名接头。**未知字段当场拒收**（`extra="forbid"`）。
+
+    **没有档位参数**（用户裁决 2026-09-04：渲染只有一档）。**没有 `output_key`**：产物键照
+    atmosphere-visual 的先例由本仓从源键确定性派生（与源图同前缀），派发方不给、本仓不铸
+    ——键形态待 contracts `registries/object_keys.md` 登记
+    （见 `image_store.REALISM_VISUAL_KEY_TEMPLATE`）。
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="forbid")
+
+    line_key: str | None = None
+    """render3d `base-render` 那路 `line.png` 在私有桶里的键（黑底白线单通道 0/255，几何边界
+    确定性提取）。与 `sketch_key` **二选一、必给其一**：两个都给说不清以哪份为几何源，都不给
+    就没有几何源。"""
+
+    sketch_key: str | None = None
+    """render3d 第五路控制稿（专为控制通道画的线稿：地面不画房间分界线、天花不画交线、门窗
+    用不同符号——失效清单 B1–B4 的对策，见《评审/失效清单-控制图通路-2026-09-04.md》§四）在
+    私有桶里的键。**那一路今天还没有**（执行者判断，未裁决）；字段先留着，形态与 `line.png`
+    相同（黑底白线单通道），本仓对两者的处理逐字节一样。"""
+
+    style_template_id: str
+    """写实风格模板的 id（`templates/realism/*.json` 里的那批）。起进程时装好，认不得的当场失败。"""
+
+    view_kind: ViewKind
+    camera_id: str
+    """这份线稿是哪台机位渲的（render3d 的 camera_id，如 `cam-bird-dollhouse`）。进产物键，
+    也随回执回去——同一套房好几台机位，键里不带它就互相覆盖。"""
+
+    seed: int | None = None
+    """送给后端的 seed；None＝不给，那一跑不可复现。**本仓不替派发方铸 seed**：要可复现由派发方给。
+    """
+
+    @model_validator(mode="after")
+    def _exactly_one_geometry_source(self) -> RealismPassRequest:
+        given = [name for name in ("line_key", "sketch_key") if getattr(self, name)]
+        if len(given) != 1:
+            raise ValueError(
+                "lineKey 与 sketchKey 二选一、必给其一（几何唯一源）："
+                + (f"给了 {'、'.join(given)}" if given else "一个都没给")
+            )
+        return self
+
+    @property
+    def source_object_key(self) -> str:
+        """真正当几何源的那条键（两个字段里给了的那个）。"""
+        key = self.line_key or self.sketch_key
+        assert key is not None  # 校验器保证了必有其一
+        return key

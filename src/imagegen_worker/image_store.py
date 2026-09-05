@@ -44,6 +44,18 @@ ATMOSPHERE_VISUAL_KEY_TEMPLATE = "uploads/{content_sha256}/atmosphere-{template_
 拍的时候摆过这一条，取"诚实"舍"稳定"。
 """
 
+REALISM_VISUAL_KEY_TEMPLATE = "{source_prefix}/realism-{camera_id}-{style_template_id}.{ext}"
+"""写实图的对象键：**与源线稿同一前缀**下的一个派生物，照风格图那条键的先例派生。
+
+`{source_prefix}`＝线稿键去掉最后一段（render3d 的 CLI 形态是 `{camera_id}/line.png`，
+桶里的键该长什么样**还没进 contracts `registries/object_keys.md`**——render3d 自己的
+四路键也没登记）。所以本行**不是逐字副本，是待登记的提案**：登记时若形态变了，改这一行
+与守门测试。三条理由同 `ATMOSPHERE_VISUAL_KEY_TEMPLATE`：确定性派生、不铸流水号、
+键里不含用户身份。`{camera_id}` 进键是因为同一套房好几台机位；`{style_template_id}`
+进键是因为同一份线稿会出好几种风格；seed 不进键——同键重跑覆盖（要并存多 seed 给业主挑
+是编排的事，触发条件写死＝出现那个需求时）。`{ext}` 按字节首部判（裁决 2026-09-02）。
+"""
+
 _FORMAT_BY_MAGIC = (
     (b"\x89PNG\r\n\x1a\n", "image/png", "png"),
     (b"\xff\xd8\xff", "image/jpeg", "jpg"),
@@ -129,6 +141,50 @@ def atmosphere_visual_key_of(master_object_key: str, template_id: str, image_byt
     )
 
 
+def check_camera_id(camera_id: str) -> None:
+    """机位 id 能不能当对象键的一段用（同模板 id 的口径）。"""
+    if not _TEMPLATE_ID_PATTERN.match(camera_id):
+        raise ImageStoreError(
+            [f"机位 id 当不了对象键的一段（只收小写字母数字与连字符）：`{camera_id}`"]
+        )
+
+
+def source_prefix_of_control_key(source_object_key: str) -> str:
+    """线稿键的前缀（去掉最后一段）。键要有前缀、每段非空、不许 `..`——不合就当场失败。
+
+    只判"能不能当键用"，不判它是不是 render3d 写的那条：那条键还没登记，本仓抄一个文件名
+    就是把一次巧合当协议（同房间表那条键的口径）。
+    """
+    parts = source_object_key.split("/")
+    if (
+        len(parts) < 2
+        or any(not part or part in (".", "..") for part in parts)
+        or source_object_key != source_object_key.strip()
+    ):
+        raise ImageStoreError(
+            [
+                "线稿键当不了派生物的前缀来源（要有目录段、每段非空、不许 `..`）："
+                f"`{source_object_key}`"
+            ]
+        )
+    return "/".join(parts[:-1])
+
+
+def realism_visual_key_of(
+    source_object_key: str, camera_id: str, style_template_id: str, image_bytes: bytes
+) -> str:
+    """写实图的对象键：与源线稿同前缀，文件名带机位与风格，**扩展名按字节首部判**。"""
+    source_prefix = source_prefix_of_control_key(source_object_key)
+    check_camera_id(camera_id)
+    check_template_id(style_template_id)
+    return REALISM_VISUAL_KEY_TEMPLATE.format(
+        source_prefix=source_prefix,
+        camera_id=camera_id,
+        style_template_id=style_template_id,
+        ext=image_ext_of(image_bytes),
+    )
+
+
 def check_shares_upload_prefix(master_object_key: str, object_key: str) -> None:
     """另一件产物是不是**与母版同一份上传件**的派生物（同 `uploads/{content_sha256}/` 前缀）。
 
@@ -205,14 +261,21 @@ class OssImageStore:
         check_shares_upload_prefix(master_object_key, room_anchors_object_key)
         return self._get(room_anchors_object_key, "房间表")
 
-    def _get(self, object_key: str, what: str) -> bytes:
+    def get_control_source(self, source_object_key: str) -> bytes:
+        """按键取写实化的几何源（render3d 的 line/sketch 那路）。键形态先过一遍，错键不发请求。"""
+        source_prefix_of_control_key(source_object_key)
+        return self._get(source_object_key, "线稿", written_by="render3d 的 `base-render`")
+
+    def _get(
+        self, object_key: str, what: str, *, written_by: str = "render2d 的 `plan-2d-render`"
+    ) -> bytes:
         try:
             data: bytes = self._bucket.get_object(object_key).read()
         except oss2.exceptions.NoSuchKey as e:
             raise ImageStoreError(
                 [
                     f"{what}不在私有桶 `{self._bucket_name}` 里（键 {object_key}）——"
-                    "写它的是 render2d 的 `plan-2d-render`，要么它没写成，要么两侧的键对不上"
+                    f"写它的是 {written_by}，要么它没写成，要么两侧的键对不上"
                 ]
             ) from e
         except oss2.exceptions.OssError as e:
@@ -236,6 +299,20 @@ class OssImageStore:
                 [f"图是空的，不往桶里写（母版 {master_object_key}，模板 {template_id}）"]
             )
         key = atmosphere_visual_key_of(master_object_key, template_id, image_bytes)
+        return self._put(key, image_bytes)
+
+    def put_realism_visual(
+        self, source_object_key: str, camera_id: str, style_template_id: str, image_bytes: bytes
+    ) -> str:
+        """写一张写实图，返回对象键（与源线稿同前缀）。写失败即上抛——不吞、不返回指向空气的键。"""
+        if not image_bytes:
+            raise ImageStoreError(
+                [f"图是空的，不往桶里写（线稿 {source_object_key}，风格 {style_template_id}）"]
+            )
+        key = realism_visual_key_of(source_object_key, camera_id, style_template_id, image_bytes)
+        return self._put(key, image_bytes)
+
+    def _put(self, key: str, image_bytes: bytes) -> str:
         content_type = image_content_type_of(image_bytes)
         try:
             self._bucket.put_object(key, image_bytes, headers={"Content-Type": content_type})

@@ -9,7 +9,7 @@
 | 注册名 | 函数名 | 职责 | 状态 |
 |---|---|---|---|
 | `atmosphere-visual` | `generate_atmosphere_visual` | 风格化交付图生成（模板库驱动，固定遮罩） | **已实现**（2026-08-31 真跑通过） |
-| `realism-pass` | `apply_realism_pass` | 生成式写实化（工厂效果图同用） | 存根——**它的输入还不存在**：吃的是 render3d `base-render` 的底渲产物，那条线一张图都还没出来。落地时点写死＝第一张底渲出得来时 |
+| `realism-pass` | `apply_realism_pass` | 生成式写实化（工厂效果图同用）：线稿控制通道，几何由我们的线稿定 | **已实装**（2026-09-05，假后端全链单测；真跑等网关那头的线稿生图 handler） |
 
 ## 出图服务（`imagegen-worker`）
 
@@ -39,6 +39,28 @@ uv run imagegen-worker                       # 监听 imagegen-activities（TEMP
 - **键的后缀是协议，不是格式断言**：真跑实测网关回来的字节是 **JPEG**，`Content-Type` 因此**按字节首部写**（`image/jpeg`），而键仍是 `.png`——换物理模型是常事（变化轴 3），键跟着模型的输出格式变会让同一张图长出两个对象。
 - **写不进桶就不是 ok**：图出得再好、落不了地也按失败回报——回一个指向空气的键，下游会拿它去发给业主。
 
+## 写实化（`realism-pass`）
+
+**几何由我们的线稿定，不由模型定**（《评审/控制图通路调研-2026-09-02.md》）：从参考图接口（Seedream，三跑三套房）换到**控制通道**（万相线稿生图 `is_sketch=true`：线稿转 90° 出图跟着转、同 seed 逐像素相同、三 seed 极差 0.004）。网关那头是 infra 的 LiteLLM custom handler，本仓只认逻辑模型名 `realism-pass.default`，请求形态＝`POST /v1/images/generations` + `is_sketch: true` + 一张白底黑线 RGB PNG + 可选 `seed`（`is_sketch` 缺失网关拒 4xx，不静默退化）。
+
+**入参**（不透明字典，`extra=forbid`）：
+
+| 入参 | 是什么 |
+|---|---|
+| `lineKey` **或** `sketchKey`（二选一、必给其一） | render3d `base-render` 那路 `line.png`（黑底白线单通道 0/255）在私有桶里的键；`sketchKey` 留给第五路控制稿（那一路今天还没有）。本仓对两者处理逐字节一样：反色成白底黑线 RGB，不缩放不抗锯齿 |
+| `styleTemplateId` | `templates/realism/*.json` 的 id。模板只有风格文字与禁令（材质与光），视角句/几何约束句/无陈设句/无文字句固定在代码里——它们是规矩不是风格 |
+| `viewKind` | `bird`（揭顶鸟瞰）/ `room`（室内机位）。**`room` 那句视角提示词没有真跑原话可抄，是执行者写的，未经真跑** |
+| `cameraId` | 哪台机位渲的（进产物键，同一套房好几台机位不互相覆盖） |
+| `seed`（可选） | 原样送后端；不给＝那一跑不可复现，本仓不替派发方铸 |
+
+**没有档位参数**（用户裁决 2026-09-04：渲染只有一档）。**默认不摆任何家具和陈设**（同日裁决：陈设有无/位置/尺寸算设计，设计上游不存在就不许模型摆），只渲墙面地面天花门窗的材质和光。
+
+**出参** `verdict=ok`：`image_object_key` / `bucket` / `content_type` / `image_size_bytes` + 自证数 `backend_name` / `seed` / `fidelity_score` / `elapsed_seconds` / `prompt_sha256` / `prompt` / `gate`。失败给 `violations` 逐条；门禁不过线（`fidelity-gate-failed`）时自证数照带、**图不进桶**。
+
+- **产物键**：`{线稿键的前缀}/realism-{camera_id}-{style_template_id}.{ext}`——与源线稿同前缀、由源键确定性派生（照风格图那条键的先例），派发方不给 `output_key`、本仓不铸。**键形态待 contracts `registries/object_keys.md` 登记**（render3d 自己的四路键也还没登记）。
+- **出口门禁**（`RealismGate`）只做两件：算分、与配置里的下限比。分数＝`fidelity_metric`（从 render3d `保真度量.py` 原样搬入：Sobel+NMS+位置/方向双重命中，三常量不动）。**下限 `ISHOME_REALISM_MIN_FIDELITY_SCORE` 不配＝只记录不判**（阈值有数据才定；尺子两条已知限制：分数只能同输出形态横向比——几何全对的底渲自量只有 0.0607；透视视角未自证）。不做重出循环，那是编排的事。
+- **后端只从配置来**：`ISHOME_REALISM_BACKEND`（缺省 `gateway-sketch`＝走网关的线稿控制路），代码里不出现厂商名；自部署 ControlNet 是第二形态，加一个 `RealismBackend` 实现、配置里点名。
+
 ## CLI（本地迭代入口，不废）
 
 ```bash
@@ -46,6 +68,11 @@ uv run imagegen --master out/plan-master.png --rooms out/rooms.json \
                 --template templates/cream-journal.json -o style.png
 # 注释与槽位是数据文件（与 activity 的两个可选入参同形）：
 #   --annotations annotations.json --life-objects life-objects.json
+
+# 写实化：render3d 的 line.png + 风格 id + 视角 → 一张图，同时打印分数与自证数
+uv run imagegen realism --line out/cam-bird-dollhouse/line.png --style modern-minimal --view bird \
+                --seed 12345 --gateway http://127.0.0.1:4000 -o realism.png
+# 旁边落 realism.sketch.png（真正送出去的控制稿）与 realism.prompt.txt（真正发出去的话）
 ```
 
 换模板、看一张图长什么样走它，不必起 Temporal、也不碰私有桶。与 activity 那条路**共用同一份纯库代码**（`atmosphere` / `style_prompt` / `image_gateway`），区别只在母版字节从哪儿来；分界由 import-linter 锁死（`cli` 看不见 `activities`）——从它能看见起，"本地改模板不需要桶凭证"就只是一句承诺而不是结构。

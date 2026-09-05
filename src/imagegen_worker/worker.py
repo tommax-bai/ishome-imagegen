@@ -14,6 +14,7 @@ Temporal activity 原生语义，不引入服务间 HTTP 调用（对齐文档 �
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 from pathlib import Path
 
@@ -21,7 +22,11 @@ from pydantic import ValidationError
 from temporalio.client import Client
 from temporalio.worker import Worker
 
-from imagegen_worker.activities import AtmosphereVisualGenerator, activity_registry
+from imagegen_worker.activities import (
+    AtmosphereVisualGenerator,
+    RealismPassRenderer,
+    activity_registry,
+)
 from imagegen_worker.atmosphere import load_template
 from imagegen_worker.image_gateway import DEFAULT_GATEWAY_URL
 from imagegen_worker.image_store import (
@@ -30,7 +35,13 @@ from imagegen_worker.image_store import (
     OssSettings,
     check_template_id,
 )
-from imagegen_worker.models import StyleTemplate
+from imagegen_worker.models import RealismStyleTemplate, StyleTemplate
+from imagegen_worker.realism import (
+    RealismError,
+    RealismGate,
+    backend_from_config,
+    backend_name_from_env,
+)
 
 GENPIPE_NAMESPACE = "genpipe"
 IMAGEGEN_TASK_QUEUE = "imagegen-activities"
@@ -40,21 +51,29 @@ TEMPLATES_DIR_ENV = "ISHOME_IMAGEGEN_TEMPLATES_DIR"
 API_KEY_ENV = "LITELLM_API_KEY"
 GATEWAY_URL_ENV = "LITELLM_BASE_URL"
 
+REALISM_TEMPLATES_SUBDIR = "realism"
+"""写实风格模板放在模板目录的 `realism/` 子目录：与风格图模板**物理分开**——两套模板形状不同，
+混在一个目录里，风格图那条路会把写实模板当成读坏了的风格模板而起不来。"""
+
+
+def _templates_dir() -> Path:
+    raw_dir = os.environ.get(TEMPLATES_DIR_ENV, "").strip()
+    if not raw_dir:
+        raise SystemExit(
+            f"没有 {TEMPLATES_DIR_ENV}：出图要模板库，指到本仓的 templates/ 目录"
+            "（模板是数据，不编进包里）"
+        )
+    return Path(raw_dir)
+
 
 def _load_templates() -> dict[str, StyleTemplate]:
-    """装模板库：目录下每份 JSON 一个模板，**起进程时逐份校验**。
+    """装风格图模板库：目录下每份 JSON 一个模板，**起进程时逐份校验**。
 
     三处当场判死，都是"装的时候不判、出图时才发现"会更贵的：模板读不动（改坏了一个字段）、
     文件名与 `templateId` 对不上（改了一个忘了另一个，而**产物的对象键里带的是 id 不是文件名**）、
     id 当不了对象键的一段。
     """
-    raw_dir = os.environ.get(TEMPLATES_DIR_ENV, "").strip()
-    if not raw_dir:
-        raise SystemExit(
-            f"没有 {TEMPLATES_DIR_ENV}：出风格图要模板库，指到本仓的 templates/ 目录"
-            "（模板是数据，不编进包里）"
-        )
-    directory = Path(raw_dir)
+    directory = _templates_dir()
     paths = sorted(directory.glob("*.json"))
     if not paths:
         raise SystemExit(f"{directory} 下一份模板都没有（*.json）——不是 templates 目录？")
@@ -80,6 +99,40 @@ def _load_templates() -> dict[str, StyleTemplate]:
     return templates
 
 
+def load_realism_template(path: Path) -> RealismStyleTemplate:
+    """读一份写实风格模板。模板是数据（红线：配置只放数据，逻辑归服务）。CLI 与 worker 共用。"""
+    with path.open(encoding="utf-8") as f:
+        return RealismStyleTemplate.model_validate(json.load(f))
+
+
+def _load_realism_templates() -> dict[str, RealismStyleTemplate]:
+    """装写实风格模板库（`templates/realism/*.json`），同三处起进程时判死。"""
+    directory = _templates_dir() / REALISM_TEMPLATES_SUBDIR
+    paths = sorted(directory.glob("*.json"))
+    if not paths:
+        raise SystemExit(
+            f"{directory} 下一份写实风格模板都没有（*.json）——realism-pass 已实装，"
+            "没有模板它出不了图；模板在本仓 templates/realism/"
+        )
+    templates: dict[str, RealismStyleTemplate] = {}
+    for path in paths:
+        try:
+            template = load_realism_template(path)
+        except (OSError, ValueError, ValidationError) as e:
+            reason = " ".join(str(e).split())[:200]
+            raise SystemExit(f"写实风格模板读不动：{path}——{reason}") from None
+        if template.template_id != path.stem:
+            raise SystemExit(
+                f"写实风格模板文件名与 templateId 对不上：{path.name} vs `{template.template_id}`"
+            )
+        try:
+            check_template_id(template.template_id)
+        except ImageStoreError as e:
+            raise SystemExit("；".join(e.details)) from None
+        templates[template.template_id] = template
+    return templates
+
+
 def _api_key() -> str:
     api_key = os.environ.get(API_KEY_ENV, "").strip()
     if not api_key:
@@ -92,23 +145,30 @@ def _api_key() -> str:
 
 async def run_worker(temporal_address: str) -> None:
     templates = _load_templates()
+    realism_templates = _load_realism_templates()
     api_key = _api_key()
+    gateway_url = os.environ.get(GATEWAY_URL_ENV, "").strip() or DEFAULT_GATEWAY_URL
     try:
         store = OssImageStore(OssSettings.from_env())
     except ImageStoreError as e:
         # 缺配置是**运维要看的一句话**，不是给开发看的调用栈：起不来的原因要一眼读得懂。
         raise SystemExit("；".join(e.details)) from None
-    generator = AtmosphereVisualGenerator(
-        store,
-        templates,
-        api_key,
-        os.environ.get(GATEWAY_URL_ENV, "").strip() or DEFAULT_GATEWAY_URL,
-    )
+    try:
+        # 写实化后端与出口门禁的下限**都只从配置来**：后端按名字装（缺省走网关的线稿控制路，
+        # 代码里不出现厂商名），下限没配＝只记录不判（阈值有数据才定）。
+        backend = backend_from_config(
+            backend_name_from_env(), api_key=api_key, gateway_url=gateway_url
+        )
+        gate = RealismGate.from_env()
+    except RealismError as e:
+        raise SystemExit("；".join(e.details)) from None
+    generator = AtmosphereVisualGenerator(store, templates, api_key, gateway_url)
+    renderer = RealismPassRenderer(store, realism_templates, backend, gate)
     client = await Client.connect(temporal_address, namespace=GENPIPE_NAMESPACE)
     worker = Worker(
         client,
         task_queue=IMAGEGEN_TASK_QUEUE,
-        activities=list(activity_registry(generator).values()),
+        activities=list(activity_registry(generator, renderer).values()),
     )
     await worker.run()
 

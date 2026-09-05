@@ -10,6 +10,10 @@ dependencies = [
   # 私有对象存储：母版从桶里取（几何唯一源），风格图写回同一前缀。图不进编排 payload——
   # 那是拿 Temporal 当文件传输通道用。
   "oss2>=2.18",
+  # 写实化那条路（realism-pass）：控制稿由 render3d 的 line.png 反色得来、保真度尺子做 Sobel+NMS——
+  # 两件都是像素级运算，靠 PNG 头读尺寸那套不够用。只在 realism / fidelity_metric 两个模块里用。
+  "numpy>=2.0",
+  "pillow>=10.0",
 ]
 
 [project.scripts]
@@ -74,15 +78,16 @@ root_packages = ["imagegen_worker"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "worker|cli → activities → atmosphere → style_prompt → models 单向"
+name = "worker|cli → activities → atmosphere|realism → style_prompt|fidelity_metric → models 单向"
 type = "layers"
 # 两个入口同层且互不可见（"|" = independent siblings）：`worker` 是 Temporal 入口，
-# `cli` 是本地出一张风格图的工具。
+# `cli` 是本地出一张图的工具。风格图（atmosphere）与写实化（realism）是两条互不可见的
+# 纯库路；保真度尺子（fidelity_metric）与提示词（style_prompt）同层互不可见。
 layers = [
   "worker | cli",
   "activities",
-  "atmosphere",
-  "style_prompt",
+  "atmosphere | realism",
+  "style_prompt | fidelity_metric",
   "models",
 ]
 containers = ["imagegen_worker"]
@@ -95,6 +100,8 @@ forbidden_modules = [
   "imagegen_worker.models",
   "imagegen_worker.style_prompt",
   "imagegen_worker.atmosphere",
+  "imagegen_worker.realism",
+  "imagegen_worker.fidelity_metric",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",
@@ -108,7 +115,26 @@ forbidden_modules = [
   "imagegen_worker.models",
   "imagegen_worker.style_prompt",
   "imagegen_worker.atmosphere",
+  "imagegen_worker.realism",
+  "imagegen_worker.fidelity_metric",
   "imagegen_worker.image_gateway",
+  "imagegen_worker.activities",
+  "imagegen_worker.worker",
+  "imagegen_worker.cli",
+  "temporalio",
+]
+
+[[tool.importlinter.contracts]]
+name = "保真度尺子 fidelity_metric 不感知上层：收两份图字节、回一个分数——它只回答几何锁没锁住"
+type = "forbidden"
+source_modules = ["imagegen_worker.fidelity_metric"]
+forbidden_modules = [
+  "imagegen_worker.models",
+  "imagegen_worker.style_prompt",
+  "imagegen_worker.atmosphere",
+  "imagegen_worker.realism",
+  "imagegen_worker.image_gateway",
+  "imagegen_worker.image_store",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",

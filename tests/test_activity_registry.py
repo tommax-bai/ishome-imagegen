@@ -10,7 +10,12 @@ from typing import Any
 
 from temporalio import activity
 
-from imagegen_worker.activities import AtmosphereVisualGenerator, activity_registry
+from imagegen_worker.activities import (
+    AtmosphereVisualGenerator,
+    RealismPassRenderer,
+    activity_registry,
+)
+from imagegen_worker.realism import RealismGate
 
 # 注册名 → 函数名（kebab-case ↔ snake_case 动词前置，规范 §2.4）
 CONTRACTS_ACTIVITY_REGISTRY: dict[str, str] = {
@@ -20,9 +25,10 @@ CONTRACTS_ACTIVITY_REGISTRY: dict[str, str] = {
 
 
 def _registry() -> dict[str, Any]:
-    """注册表要一个装好的实现件——**依赖由组合根注入**；这里只点名，给一个空壳就够。"""
+    """注册表要两个装好的实现件——**依赖由组合根注入**；这里只点名，给空壳就够。"""
     generator = AtmosphereVisualGenerator(None, {}, "k", "http://gateway.test")  # type: ignore[arg-type]
-    return activity_registry(generator)
+    renderer = RealismPassRenderer(None, {}, None, RealismGate())  # type: ignore[arg-type]
+    return activity_registry(generator, renderer)
 
 
 def test_registry_matches_contracts() -> None:

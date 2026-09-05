@@ -24,11 +24,20 @@ DEFAULT_TIMEOUT_SECONDS = 300
 
 
 class ImageGatewayError(Exception):
-    """出图失败。响亮失败，不返回空图让下游拿着它跑。"""
+    """出图失败。响亮失败，不返回空图让下游拿着它跑。
 
-    def __init__(self, details: list[str]) -> None:
+    `http_status`：网关明确拒绝时的状态码；连不上/超时/回执不是 JSON 时为 None。
+    `transient`：**只有**连不上、超时、5xx 这三类算"再发一次可能就好"；4xx（契约不对）与
+    2xx 但回执畸形（没有图、b64 解不开）再发也是同一个结果，只会再花一次钱。调用方按它定重不重试。
+    """
+
+    def __init__(
+        self, details: list[str], *, http_status: int | None = None, transient: bool = False
+    ) -> None:
         super().__init__("；".join(details))
         self.details = details
+        self.http_status = http_status
+        self.transient = transient
 
 
 def _post(url: str, api_key: str, body: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
@@ -41,9 +50,15 @@ def _post(url: str, api_key: str, body: dict[str, Any], timeout_seconds: int) ->
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             payload: dict[str, Any] = json.load(response)
     except urllib.error.HTTPError as e:
-        raise ImageGatewayError([f"网关拒绝（HTTP {e.code}）：{e.read().decode()[:400]}"]) from e
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
-        raise ImageGatewayError([f"网关连不上或回了不认识的东西：{e}"]) from e
+        raise ImageGatewayError(
+            [f"网关拒绝（HTTP {e.code}）：{e.read().decode()[:400]}"],
+            http_status=e.code,
+            transient=e.code >= 500,
+        ) from e
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise ImageGatewayError([f"网关连不上：{e}"], transient=True) from e
+    except json.JSONDecodeError as e:
+        raise ImageGatewayError([f"网关回了不是 JSON 的东西：{e}"]) from e
     return payload
 
 
@@ -88,3 +103,51 @@ def generate_from_image(
         raise ImageGatewayError(["回执里没有图片内容（b64_json 为空）"])
     revised = items[0].get("revised_prompt") or ""
     return base64.b64decode(encoded), str(revised)
+
+
+def generate_from_sketch(
+    *,
+    model: str,
+    prompt: str,
+    sketch_png: bytes,
+    seed: int | None,
+    api_key: str,
+    gateway_url: str = DEFAULT_GATEWAY_URL,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+) -> tuple[bytes, dict[str, Any]]:
+    """线稿生图（控制通道）：一张白底黑线的线稿 + 一段提示词 → 一张图。返回（图字节, 回执其余）。
+
+    契约（infra 的 LiteLLM custom handler，2026-09-05）：同一个 `/v1/images/generations` 口，
+    请求多带 `is_sketch: true`（**缺了网关拒绝 4xx，不静默退化**——与参考图那条路"输入图被丢、
+    调用照样成功"的坑是两回事，所以这里不查 `input_images`）与可选的 `seed`。
+    `image` 只一张，白底黑线 RGB PNG，几何由它定、不由模型定。
+    """
+    if not sketch_png:
+        raise ImageGatewayError(["线稿是空的：没有线稿就没有几何来源，不往下走"])
+    body: dict[str, Any] = {
+        "model": model,
+        "prompt": prompt,
+        "image": "data:image/png;base64," + base64.b64encode(sketch_png).decode(),
+        "n": 1,
+        "response_format": "b64_json",
+        "is_sketch": True,
+    }
+    if seed is not None:
+        body["seed"] = seed
+    payload = _post(gateway_url + IMAGE_ENDPOINT, api_key, body, timeout_seconds)
+
+    items = payload.get("data") or []
+    if not items:
+        raise ImageGatewayError(["网关回了空的图片列表"])
+    encoded = items[0].get("b64_json")
+    if not encoded:
+        raise ImageGatewayError(["回执里没有图片内容（b64_json 为空）"])
+    try:
+        image_bytes = base64.b64decode(encoded, validate=True)
+    except (ValueError, TypeError) as e:
+        raise ImageGatewayError([f"回执里的 b64_json 解不开：{e}"]) from e
+    if not image_bytes:
+        raise ImageGatewayError(["回执里的图片解出来是零字节"])
+    raw_meta = {key: value for key, value in payload.items() if key != "data"}
+    raw_meta["data_meta"] = [{k: v for k, v in item.items() if k != "b64_json"} for item in items]
+    return image_bytes, raw_meta

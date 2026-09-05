@@ -31,7 +31,18 @@ from imagegen_worker.atmosphere import (
     render_atmosphere_visual,
 )
 from imagegen_worker.image_store import ImageStoreError, OssImageStore, image_content_type_of
-from imagegen_worker.models import AtmosphereVisualRequest, RealismPassRequest, StyleTemplate
+from imagegen_worker.models import (
+    AtmosphereVisualRequest,
+    RealismPassRequest,
+    RealismStyleTemplate,
+    StyleTemplate,
+)
+from imagegen_worker.realism import (
+    RealismBackend,
+    RealismError,
+    RealismGate,
+    render_realism_visual,
+)
 
 ActivityResult = dict[str, Any]
 
@@ -162,19 +173,120 @@ class AtmosphereVisualGenerator:
         }
 
 
-@activity.defn(name=ACTIVITY_REALISM_PASS)
-async def apply_realism_pass(request: RealismPassRequest) -> ActivityResult:
-    """生成式写实化（工厂效果图同用）。**本轮仍是存根**。
+class RealismPassRenderer:
+    """写实化 activity 的实现件，依赖由组合根（worker）注入：私有桶、写实风格模板库、后端、门禁。
 
-    不动它的理由是**它的输入还不存在**：写实化吃的是三维底渲的产物（render3d 的 `base-render`：
-    几何/深度/线稿/遮罩），那条线一张底渲图都还没出来。现在实现它只能对着想象中的入参写，
-    等真产物出来必然推倒重写——"接一遍再改一遍"正是母版与渲染层"工具形态先行"要避开的那件事。
-
-    触发条件写死＝**render3d 的 `base-render` 出得来第一张底渲**。那时本函数按与
-    `generate_atmosphere_visual` 相同的形态落地：底渲图走私有桶、入参是不透明字典、
-    产物键与源图同前缀。在那之前它被派到就当场炸——存根被当成实现调用是最贵的一种误会。
+    存根落地的触发条件（"render3d 的 `base-render` 出得来第一张底渲"）2026-09-01 已成立；
+    换到控制通道（几何由我们的线稿定）的三判据 2026-09-02 已过，本件按那条通路的契约实装。
+    形态与 `AtmosphereVisualGenerator` 相同：取键 → 纯库 → 写桶 → 返回键与自证数；
+    入参是不透明字典；**不知用户是谁**。
     """
-    raise NotImplementedError
+
+    def __init__(
+        self,
+        store: OssImageStore,
+        templates: dict[str, RealismStyleTemplate],
+        backend: RealismBackend,
+        gate: RealismGate,
+    ) -> None:
+        self._store = store
+        self._templates = templates
+        self._backend = backend
+        self._gate = gate
+
+    @activity.defn(name=ACTIVITY_REALISM_PASS)
+    async def apply_realism_pass(self, request: dict[str, Any]) -> ActivityResult:
+        """线稿（桶里）+ 风格模板 + 视角 → 写实图 → 量分 → 写回同一前缀，返回**对象键**与自证数。
+
+        **几何由线稿定，不由模型定**：控制稿是线稿逐像素反色，一次重采样都不做。
+        **没有档位**、**默认无陈设**、**产物键由本仓从源键派生**（三条口径见
+        `models.RealismPassRequest`）。
+
+        门禁**只做两件**：算分、与配置里的下限比。没配下限＝只记录不判（回执里照样带分数）；
+        配了下限、不过线＝按 failed 回报并带分数与原因，**图不进桶**（同键会盖掉上一张过线的）。
+        不重出——重出几次、换不换 seed 由编排定。
+        """
+        try:
+            parsed = RealismPassRequest.model_validate(request)
+        except ValidationError as e:
+            return _failed("gate-bad-input", f"入参解析失败：{e}")
+
+        template = self._templates.get(parsed.style_template_id)
+        if template is None:
+            known = "、".join(sorted(self._templates)) or "（一个都没装上）"
+            return _failed(
+                "gate-unknown-style-template",
+                f"没有写实风格模板 `{parsed.style_template_id}`：本进程装了 {known}",
+            )
+
+        source_object_key = parsed.source_object_key
+        try:
+            # 取线稿顺带把键的形态判了（当不了派生物前缀来源的键不发请求）——要在花钱出图之前判。
+            line_png = await asyncio.to_thread(self._store.get_control_source, source_object_key)
+        except ImageStoreError as e:
+            return _failed_many("image-store-failed", e.details)
+
+        try:
+            # 出图是几十秒的阻塞调用（真跑 18–95 s）：丢进线程里跑，不占事件循环。
+            visual = await asyncio.to_thread(
+                render_realism_visual,
+                line_png=line_png,
+                template=template,
+                view_kind=parsed.view_kind,
+                seed=parsed.seed,
+                backend=self._backend,
+            )
+        except RealismError as e:
+            # 线稿解不成图、网关拒绝、回执没有图——逐条回报；要不要重试由编排侧显式决定，
+            # 每重试一次都要再花一次出图的钱。
+            return _failed_many("realism-failed", e.details)
+
+        try:
+            # 量分是纯 CPU（1280×960 上几秒），同样不占事件循环。尺子认原始线稿，不认反色稿。
+            verdict = await asyncio.to_thread(self._gate.judge, line_png, visual.image_bytes)
+        except RealismError as e:
+            return _failed_many("fidelity-gate-failed", e.details)
+
+        evidence: dict[str, Any] = {
+            "source_object_key": source_object_key,
+            "camera_id": parsed.camera_id,
+            "style_template_id": template.template_id,
+            "view_kind": parsed.view_kind,
+            # 自证数：这张图是谁出的、能不能复现、几何锁得怎样、花了多久、当时要的是哪段话
+            "backend_name": visual.output.backend_name,
+            "seed": visual.output.seed,
+            "fidelity_score": verdict.fidelity_score,
+            "elapsed_seconds": visual.output.elapsed_seconds,
+            "prompt_sha256": visual.prompt_sha256,
+            "prompt": visual.prompt,
+            "gate": verdict.as_dict(),
+        }
+        if verdict.judged and not verdict.passed:
+            return {
+                **_failed("fidelity-gate-failed", verdict.reason or "不过线"),
+                **evidence,
+            }
+
+        try:
+            image_object_key = await asyncio.to_thread(
+                self._store.put_realism_visual,
+                source_object_key,
+                parsed.camera_id,
+                template.template_id,
+                visual.image_bytes,
+            )
+        except ImageStoreError as e:
+            # 图出得再好、落不了地也按失败回报——回一个指向空气的键，下游会拿它去发给业主。
+            return _failed_many("image-store-failed", e.details)
+
+        return {
+            "verdict": "ok",
+            "image_object_key": image_object_key,
+            "bucket": self._store.bucket_name,
+            "image_size_bytes": len(visual.image_bytes),
+            "content_type": image_content_type_of(visual.image_bytes),
+            **evidence,
+        }
 
 
 def _failed(check: str, detail: str) -> ActivityResult:
@@ -188,12 +300,14 @@ def _failed_many(check: str, details: list[str]) -> ActivityResult:
     }
 
 
-def activity_registry(generator: AtmosphereVisualGenerator) -> dict[str, Callable[..., Any]]:
+def activity_registry(
+    generator: AtmosphereVisualGenerator, renderer: RealismPassRenderer
+) -> dict[str, Callable[..., Any]]:
     """本仓承接的 activity 全集（队列 `imagegen-activities`）。
 
     键与 contracts 注册表逐字一致（tests/test_activity_registry.py 断言）。
     """
     return {
         ACTIVITY_ATMOSPHERE_VISUAL: generator.generate_atmosphere_visual,
-        ACTIVITY_REALISM_PASS: apply_realism_pass,
+        ACTIVITY_REALISM_PASS: renderer.apply_realism_pass,
     }
