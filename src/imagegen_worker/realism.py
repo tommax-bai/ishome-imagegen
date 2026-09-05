@@ -32,7 +32,7 @@ from typing import Any, Protocol
 import numpy as np
 from PIL import Image
 
-from imagegen_worker import fidelity_metric, image_gateway
+from imagegen_worker import fidelity_metric, fidelity_metric_v3, image_gateway
 from imagegen_worker.models import RealismStyleTemplate, ViewKind
 
 REALISM_MODEL = "realism-pass.default"
@@ -43,6 +43,11 @@ GATEWAY_SKETCH_BACKEND_NAME = "gateway-sketch"
 
 BACKEND_ENV = "ISHOME_REALISM_BACKEND"
 MIN_FIDELITY_SCORE_ENV = "ISHOME_REALISM_MIN_FIDELITY_SCORE"
+
+METRIC_VERSIONS: tuple[str, ...] = ("v2", "v3")
+"""门禁跑哪几把尺子。**判只按 v2**（`fidelity_score` 对下限）；v3 的两个分数与配准只进回执，
+给定阈值攒分布（`_iteration/run-2026-09-05-metric-v3/run.md` §六：整图错位算不算几何错、
+阈值取多少，待拍）。"""
 
 _GATEWAY_TIMEOUT_SECONDS = 300
 """万相线稿生图真跑 17.9–95.1 s（含排队）；沿用网关那条路的上限。"""
@@ -325,8 +330,44 @@ def render_realism_visual(
 
 
 @dataclass(frozen=True)
+class FidelityV3Measurement:
+    """v3 尺子量出来的数：原位分、配准后分、配准 (sx, sy, dx, dy)。
+
+    `score_at_origin` 只含分母改法（与 v2 直接对照）；`score_registered` 再含 ±24 px 平移配准；
+    (dx, dy)＝线稿要往右 / 往下挪多少像素才与结果最对齐，(sx, sy) 不搜缩放时恒为 (1, 1)。
+    """
+
+    score_at_origin: float
+    score_registered: float
+    sx: float
+    sy: float
+    dx: int
+    dy: int
+
+    def registration(self) -> dict[str, float | int]:
+        return {"sx": self.sx, "sy": self.sy, "dx": self.dx, "dy": self.dy}
+
+
+def _measure_v3(
+    line_png: bytes, result_png: bytes
+) -> tuple[FidelityV3Measurement | None, str | None]:
+    """量 v3，只记录：量不出回 (None, 原因)。
+
+    与 v2 的响亮失败不同——v3 是候选尺子、不参与判，它任何一种失败都不许拖垮出图，
+    所以这里连非度量类异常也接住，如实记成一句话进回执（`v3_error`）。
+    """
+    try:
+        v3 = fidelity_metric_v3.score_fidelity_v3(line_png, result_png)
+    except Exception as e:  # 宽捕获是有意的，见 docstring：候选尺子只记录，不许拖垮出图
+        return None, f"{type(e).__name__}: {e}"
+    sx, sy = v3.scale_xy
+    dx, dy = v3.offset_px
+    return FidelityV3Measurement(v3.score_at_origin, v3.score, sx, sy, dx, dy), None
+
+
+@dataclass(frozen=True)
 class RealismGateVerdict:
-    """门禁的结论：分数永远有；判不判、过没过，看有没有下限。"""
+    """门禁的结论：分数永远有；判不判、过没过，看有没有下限。v3 的数只记录。"""
 
     fidelity_score: float
     min_fidelity_score: float | None
@@ -337,6 +378,11 @@ class RealismGateVerdict:
     reason: str | None
     """不过线的原因（只在 `passed is False` 时有）。"""
 
+    v3: FidelityV3Measurement | None
+    """v3 记录项；量不出时 None、原因在 `v3_error`。不参与判。"""
+
+    v3_error: str | None
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "fidelity_score": self.fidelity_score,
@@ -344,16 +390,23 @@ class RealismGateVerdict:
             "judged": self.judged,
             "passed": self.passed,
             "reason": self.reason,
+            "fidelity_v3_at_origin": self.v3.score_at_origin if self.v3 else None,
+            "fidelity_v3_registered": self.v3.score_registered if self.v3 else None,
+            "registration": self.v3.registration() if self.v3 else None,
+            "v3_error": self.v3_error,
+            "metric_versions": list(METRIC_VERSIONS),
         }
 
 
 class RealismGate:
     """出口门禁，只做两件：算分、与配置里的下限比。
 
+    算分是两把尺子：v2（`fidelity_metric`）出 `fidelity_score`，**判只按它**；v3
+    （`fidelity_metric_v3`）出原位分、配准后分与配准位移，**只记录**（`METRIC_VERSIONS`）。
     **下限默认 None＝只记录不判**（《纪律·阈值有数据才定》；且尺子有两条已知限制，见
-    `fidelity_metric` 模块文档——分数只能同输出形态横向比、透视视角未自证）。给了下限才判，
-    不过线给出原因。**不做重出循环**——重出几次、换不换 seed 是编排的事（《方案/挑图与保真度
-    门禁方案》§二），门禁只回答"这一张过不过"。
+    `fidelity_metric` 模块文档——分数只能同输出形态横向比、透视视角 v2 分不开正确配对与错配）。
+    给了下限才判，不过线给出原因。**不做重出循环**——重出几次、换不换 seed 是编排的事
+    （《方案/挑图与保真度门禁方案》§二），门禁只回答"这一张过不过"。
     """
 
     def __init__(self, min_fidelity_score: float | None = None) -> None:
@@ -379,13 +432,17 @@ class RealismGate:
             raise RealismError([f"{MIN_FIDELITY_SCORE_ENV} 不是数：`{raw}`"]) from e
 
     def judge(self, line_png: bytes, result_png: bytes) -> RealismGateVerdict:
-        """量一次分；有下限就判。量不出分数照样响亮失败——门禁不给 0 分放行也不给 0 分拦下。"""
+        """量一次分；有下限就判。v2 量不出照样响亮失败——门禁不给 0 分放行也不给 0 分拦下；
+        v3 量不出只记 `v3_error`，出图不受影响。"""
         try:
             score = fidelity_metric.score_fidelity(line_png, result_png)
         except fidelity_metric.FidelityMetricError as e:
             raise RealismError([f"保真度量不出来：{e}"]) from e
+        v3, v3_error = _measure_v3(line_png, result_png)
         if self._min_fidelity_score is None:
-            return RealismGateVerdict(score, None, judged=False, passed=None, reason=None)
+            return RealismGateVerdict(
+                score, None, judged=False, passed=None, reason=None, v3=v3, v3_error=v3_error
+            )
         passed = score >= self._min_fidelity_score
         reason = (
             None
@@ -396,5 +453,11 @@ class RealismGate:
             )
         )
         return RealismGateVerdict(
-            score, self._min_fidelity_score, judged=True, passed=passed, reason=reason
+            score,
+            self._min_fidelity_score,
+            judged=True,
+            passed=passed,
+            reason=reason,
+            v3=v3,
+            v3_error=v3_error,
         )

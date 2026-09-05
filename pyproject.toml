@@ -78,15 +78,18 @@ root_packages = ["imagegen_worker"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "worker|cli → activities → atmosphere|realism → style_prompt|fidelity_metric → models 单向"
+name = "worker|cli → activities → atmosphere|realism → fidelity_metric_v3 → style_prompt|fidelity_metric → models 单向"
 type = "layers"
 # 两个入口同层且互不可见（"|" = independent siblings）：`worker` 是 Temporal 入口，
 # `cli` 是本地出一张图的工具。风格图（atmosphere）与写实化（realism）是两条互不可见的
 # 纯库路；保真度尺子（fidelity_metric）与提示词（style_prompt）同层互不可见。
+# 尺子 v3（fidelity_metric_v3）借 v2 的函数与常量，所以在 v2 上一层、v2 看不见它；
+# 它看不见 style_prompt 由下面它自己的禁入契约锁。
 layers = [
   "worker | cli",
   "activities",
   "atmosphere | realism",
+  "fidelity_metric_v3",
   "style_prompt | fidelity_metric",
   "models",
 ]
@@ -102,6 +105,7 @@ forbidden_modules = [
   "imagegen_worker.atmosphere",
   "imagegen_worker.realism",
   "imagegen_worker.fidelity_metric",
+  "imagegen_worker.fidelity_metric_v3",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",
@@ -117,6 +121,7 @@ forbidden_modules = [
   "imagegen_worker.atmosphere",
   "imagegen_worker.realism",
   "imagegen_worker.fidelity_metric",
+  "imagegen_worker.fidelity_metric_v3",
   "imagegen_worker.image_gateway",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
@@ -128,6 +133,23 @@ forbidden_modules = [
 name = "保真度尺子 fidelity_metric 不感知上层：收两份图字节、回一个分数——它只回答几何锁没锁住"
 type = "forbidden"
 source_modules = ["imagegen_worker.fidelity_metric"]
+forbidden_modules = [
+  "imagegen_worker.models",
+  "imagegen_worker.style_prompt",
+  "imagegen_worker.atmosphere",
+  "imagegen_worker.realism",
+  "imagegen_worker.image_gateway",
+  "imagegen_worker.image_store",
+  "imagegen_worker.activities",
+  "imagegen_worker.worker",
+  "imagegen_worker.cli",
+  "temporalio",
+]
+
+[[tool.importlinter.contracts]]
+name = "保真度尺子 fidelity_metric_v3 不感知上层：只借 v2 的函数与常量，同样只收两份图字节、回分数与位移"
+type = "forbidden"
+source_modules = ["imagegen_worker.fidelity_metric_v3"]
 forbidden_modules = [
   "imagegen_worker.models",
   "imagegen_worker.style_prompt",

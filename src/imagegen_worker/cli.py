@@ -159,6 +159,15 @@ def realism_main(argv: list[str]) -> int:
         f"elapsed_seconds={visual.output.elapsed_seconds:.1f} prompt_sha256={visual.prompt_sha256}"
     )
     print(f"fidelity_score={verdict.fidelity_score:.4f}（结构边重合度，只能同输出形态横向比）")
+    if verdict.v3 is not None:
+        v3 = verdict.v3
+        print(
+            f"fidelity_v3_at_origin={v3.score_at_origin:.4f} "
+            f"fidelity_v3_registered={v3.score_registered:.4f} "
+            f"registration=sx={v3.sx:.3f} sy={v3.sy:.3f} dx={v3.dx:+d} dy={v3.dy:+d}（只记录不判）"
+        )
+    else:
+        print(f"fidelity_v3=量不出来：{verdict.v3_error}（只记录，不影响出图）")
     if not verdict.judged:
         print("gate=只记录不判（没配 ISHOME_REALISM_MIN_FIDELITY_SCORE）")
         return 0

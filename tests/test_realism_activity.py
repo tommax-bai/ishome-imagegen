@@ -1,5 +1,6 @@
 """写实化 activity：假后端下全链（取键 → 控制稿 → 提示词 → 出图 → 量分 → 写桶 → 回键与自证数），
-以及门禁路径、"写不进桶不许当成功"、入参形态。桶与后端都用桩件——真桶真网关由真跑留档。"""
+以及门禁路径（v2 判、v3 只记）、"写不进桶不许当成功"、入参形态。
+桶与后端都用桩件——真桶真网关由真跑留档。"""
 
 from __future__ import annotations
 
@@ -8,10 +9,12 @@ from typing import Any
 
 import pytest
 
-from imagegen_worker import realism
+from imagegen_worker import fidelity_metric_v3, realism
 from imagegen_worker.activities import ACTIVITY_REALISM_PASS, RealismPassRenderer
 from imagegen_worker.image_store import ImageStoreError, realism_visual_key_of
 from imagegen_worker.models import RealismStyleTemplate
+
+pytestmark = pytest.mark.usefixtures("memoized_fidelity_v3")
 
 _FIXTURES = Path(__file__).resolve().parent / "fixtures" / "真户型-基准-cam-bird-dollhouse"
 _LINE_PNG = (_FIXTURES / "line.png").read_bytes()
@@ -134,12 +137,18 @@ async def test_full_chain_with_a_fake_backend() -> None:
     assert result["elapsed_seconds"] == 0.25
     assert result["fidelity_score"] == pytest.approx(0.0607, abs=1e-4)
     assert result["prompt_sha256"] == realism.prompt_sha256_of(result["prompt"])
+    # 回执 gate：v2 判（没下限＝只记录）、v3 两个分数与配准一起记，给定阈值攒分布
     assert result["gate"] == {
         "fidelity_score": result["fidelity_score"],
         "min_fidelity_score": None,
         "judged": False,
         "passed": None,
         "reason": None,
+        "fidelity_v3_at_origin": pytest.approx(0.0675, abs=1e-4),
+        "fidelity_v3_registered": pytest.approx(0.0690, abs=1e-4),
+        "registration": {"sx": 1.0, "sy": 1.0, "dx": 0, "dy": 1},
+        "v3_error": None,
+        "metric_versions": ["v2", "v3"],
     }
     # 后端收到的是反色控制稿、提示词是我们拼的那段、seed 原样
     [call] = backend.calls
@@ -159,6 +168,29 @@ async def test_sketch_key_is_accepted_as_the_geometry_source() -> None:
     assert result["verdict"] == "ok"
     assert result["source_object_key"] == sketch_key
     assert result["image_object_key"].startswith(f"uploads/{_SHA}/{_CAMERA_ID}/realism-")
+
+
+async def test_v3_failure_is_recorded_and_the_image_still_ships(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """v3 只记录：它抛错不许拖垮出图——verdict 仍 ok、图进桶、v2 分数照带，`v3_error` 写明原因。"""
+
+    def boom(line_png: bytes, result_png: bytes, **kwargs: Any) -> Any:
+        raise RuntimeError("v3 炸了")
+
+    monkeypatch.setattr(fidelity_metric_v3, "score_fidelity_v3", boom)
+    store = _StubImageStore()
+
+    result = await _renderer(store).apply_realism_pass(_request())
+
+    assert result["verdict"] == "ok"
+    assert len(store.written) == 1
+    assert result["fidelity_score"] == pytest.approx(0.0607, abs=1e-4)
+    assert result["gate"]["v3_error"] == "RuntimeError: v3 炸了"
+    assert result["gate"]["fidelity_v3_at_origin"] is None
+    assert result["gate"]["fidelity_v3_registered"] is None
+    assert result["gate"]["registration"] is None
+    assert result["gate"]["metric_versions"] == ["v2", "v3"]
 
 
 async def test_gate_with_a_floor_blocks_and_writes_nothing() -> None:

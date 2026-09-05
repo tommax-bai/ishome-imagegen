@@ -1,4 +1,4 @@
-"""写实化纯库：控制稿逐像素、提示词固定句、后端契约（假网关）、门禁"没下限只记录不判"。"""
+"""写实化纯库：控制稿逐像素、提示词固定句、后端契约（假网关）、门禁（没下限只记不判；v3 只记）。"""
 
 from __future__ import annotations
 
@@ -15,8 +15,10 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from imagegen_worker import realism
+from imagegen_worker import fidelity_metric_v3, realism, worker
 from imagegen_worker.models import RealismStyleTemplate
+
+pytestmark = pytest.mark.usefixtures("memoized_fidelity_v3")
 
 _FIXTURES = Path(__file__).resolve().parent / "fixtures" / "真户型-基准-cam-bird-dollhouse"
 _LINE_PNG = (_FIXTURES / "line.png").read_bytes()
@@ -127,6 +129,20 @@ def test_shipped_realism_templates_load(path: Path) -> None:
     assert template.style
     # 风格文字不许写家具（默认无陈设，模板里写了就是两半打架）
     assert not any(word in template.style for word in ("沙发", "床", "餐桌", "布艺"))
+
+
+def test_worker_loads_every_shipped_realism_template(monkeypatch: pytest.MonkeyPatch) -> None:
+    """worker 装配从目录读：`templates/realism/` 里有几份就装几份（北欧转正后是两份），
+    风格图那套模板库照旧只读顶层、不被子目录里的写实模板绊倒。"""
+    monkeypatch.setenv(worker.TEMPLATES_DIR_ENV, str(_TEMPLATES_DIR.parent))
+
+    realism_templates = worker._load_realism_templates()
+    atmosphere_templates = worker._load_templates()
+
+    assert set(realism_templates) == {p.stem for p in _TEMPLATES_DIR.glob("*.json")}
+    assert {"modern-minimal", "nordic-light"} <= set(realism_templates)
+    assert realism_templates["nordic-light"].style.startswith("北欧风格")
+    assert not set(atmosphere_templates) & set(realism_templates)
 
 
 def test_realism_template_rejects_unknown_fields() -> None:
@@ -317,7 +333,8 @@ def test_backend_comes_from_config_by_name_only() -> None:
 
 
 def test_gate_without_a_floor_records_but_does_not_judge() -> None:
-    """下限默认 None＝只记录不判（阈值有数据才定）：分数有、judged=False、passed=None。"""
+    """下限默认 None＝只记录不判（阈值有数据才定）：分数有、judged=False、passed=None。
+    v3 的原位分、配准后分与位移一起记进回执（数同 `test_fidelity_metric_v3.py` 钉的）。"""
     verdict = realism.RealismGate().judge(_LINE_PNG, _GEOMETRY_PNG)
 
     assert verdict.fidelity_score == pytest.approx(0.0607, abs=1e-4)
@@ -325,7 +342,41 @@ def test_gate_without_a_floor_records_but_does_not_judge() -> None:
     assert verdict.judged is False
     assert verdict.passed is None
     assert verdict.reason is None
-    assert verdict.as_dict()["judged"] is False
+    assert verdict.v3 is not None and verdict.v3_error is None
+    assert verdict.v3.score_at_origin == pytest.approx(0.0675, abs=1e-4)
+    assert verdict.v3.score_registered == pytest.approx(0.0690, abs=1e-4)
+    assert verdict.v3.registration() == {"sx": 1.0, "sy": 1.0, "dx": 0, "dy": 1}
+    receipt = verdict.as_dict()
+    assert receipt["judged"] is False
+    assert receipt["metric_versions"] == ["v2", "v3"]
+    assert receipt["fidelity_v3_at_origin"] == verdict.v3.score_at_origin
+    assert receipt["fidelity_v3_registered"] == verdict.v3.score_registered
+    assert receipt["registration"] == {"sx": 1.0, "sy": 1.0, "dx": 0, "dy": 1}
+    assert receipt["v3_error"] is None
+
+
+def test_gate_records_a_v3_failure_and_still_judges_by_v2(monkeypatch: pytest.MonkeyPatch) -> None:
+    """v3 是候选尺子只记录：它抛什么都不许拖垮门禁——v2 分数照量、判照 v2 下限，
+    回执里 v3 三项为 None、`v3_error` 写明是什么。"""
+
+    def boom(line_png: bytes, result_png: bytes, **kwargs: Any) -> Any:
+        raise RuntimeError("v3 炸了")
+
+    monkeypatch.setattr(fidelity_metric_v3, "score_fidelity_v3", boom)
+
+    recorded = realism.RealismGate().judge(_LINE_PNG, _GEOMETRY_PNG)
+    judged = realism.RealismGate(0.05).judge(_LINE_PNG, _GEOMETRY_PNG)
+
+    assert recorded.fidelity_score == pytest.approx(0.0607, abs=1e-4)
+    assert recorded.v3 is None
+    assert recorded.v3_error == "RuntimeError: v3 炸了"
+    receipt = recorded.as_dict()
+    assert receipt["fidelity_v3_at_origin"] is None
+    assert receipt["fidelity_v3_registered"] is None
+    assert receipt["registration"] is None
+    assert receipt["v3_error"] == "RuntimeError: v3 炸了"
+    assert receipt["metric_versions"] == ["v2", "v3"]
+    assert judged.judged and judged.passed is True and judged.v3_error == "RuntimeError: v3 炸了"
 
 
 def test_gate_with_a_floor_judges_both_ways() -> None:
@@ -403,6 +454,8 @@ def test_cli_realism_subcommand_runs_the_whole_path_against_a_fake_gateway(
     assert "现代简约风格" in prompt and "不摆放任何家具和陈设" in prompt
     printed = capsys.readouterr().out
     assert "fidelity_score=0.0607" in printed
+    assert "fidelity_v3_at_origin=0.0675 fidelity_v3_registered=0.0690" in printed
+    assert "registration=sx=1.000 sy=1.000 dx=+0 dy=+1" in printed
     assert "backend_name=gateway-sketch seed=7" in printed
     assert "prompt_sha256=" + realism.prompt_sha256_of(prompt) in printed
     assert "只记录不判" in printed

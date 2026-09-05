@@ -57,9 +57,17 @@ uv run imagegen-worker                       # 监听 imagegen-activities（TEMP
 
 **出参** `verdict=ok`：`image_object_key` / `bucket` / `content_type` / `image_size_bytes` + 自证数 `backend_name` / `seed` / `fidelity_score` / `elapsed_seconds` / `prompt_sha256` / `prompt` / `gate`。失败给 `violations` 逐条；门禁不过线（`fidelity-gate-failed`）时自证数照带、**图不进桶**。
 
+**写实风格模板**（`templates/realism/*.json`，只有风格文字与禁令）：
+
+| 模板 id | 材质与光 | 真跑出处 |
+|---|---|---|
+| `modern-minimal` | 现代简约：暖白哑光墙、浅橡木宽板地板、黑色金属细节、柔和自然光 | render3d `_iteration/run-2026-09-05-control-sketch-realism/run.md`（5 机位 × 3 seed 共 15 张，家具 0 件） |
+| `nordic-light` | 北欧：纯白哑光墙、浅色白蜡木宽板地板、灰蓝门扇与窗框、明亮均匀的漫射自然光 | render3d `_iteration/run-2026-09-05-realism-styles/run.md`（同控制稿同 seed 只换风格句：揭顶两 seed + 主卧一张，墙与洞口位置不动、家具 0 件）。同批 `cream-warm` 揭顶带出绿植、抬高平台等 4 处陈设残留，留在那份记录里，改词重跑听话后再进 |
+
 - **产物键**：`{线稿键的前缀}/realism-{camera_id}-{style_template_id}.{ext}`——与源线稿同前缀、由源键确定性派生（照风格图那条键的先例），派发方不给 `output_key`、本仓不铸。**键形态待 contracts `registries/object_keys.md` 登记**（render3d 自己的四路键也还没登记）。
 - **机位 id 的字符集与 render3d 不一致（待拍，不是裁决）**：本仓 `image_store.check_camera_id` 只收 `[a-z0-9-]`（同模板 id 的口径），而 render3d `object_store.check_key_segment` **不限定字符集**，拟真包里的室内机位 id 带房间名（`cam-room-客厅`）。这样的机位派到 `realism-pass`，会在写桶那一步（`image-store-failed`）才被拦下——图已经出了、钱已经花了。两种统一方向：①机位 id 一律 ASCII slug，房间名另存字段（render3d `CameraSpec.room` 已有）；②本仓放宽到 render3d 那条口径（只拦空、`/`、`..`、首尾空白、控制字符）。拍板前**本仓行为不动**。
-- **出口门禁**（`RealismGate`）只做两件：算分、与配置里的下限比。分数＝`fidelity_metric`（从 render3d `保真度量.py` 原样搬入：Sobel+NMS+位置/方向双重命中，三常量不动）。**下限 `ISHOME_REALISM_MIN_FIDELITY_SCORE` 不配＝只记录不判**（阈值有数据才定；尺子两条已知限制：分数只能同输出形态横向比——几何全对的底渲自量只有 0.0607；透视视角未自证）。不做重出循环，那是编排的事。
+- **出口门禁**（`RealismGate`）只做两件：算分、与配置里的下限比。判用的分数＝`fidelity_metric`（v2，从 render3d `保真度量.py` 原样搬入：Sobel+NMS+位置/方向双重命中，三常量不动）。**下限 `ISHOME_REALISM_MIN_FIDELITY_SCORE` 不配＝只记录不判**（阈值有数据才定；尺子两条已知限制：分数只能同输出形态、同风格横向比——几何全对的底渲自量只有 0.0607，同几何的主卧 `nordic-light` 0.17 对 `modern-minimal` 0.55；室内透视视角 v2 分不开正确配对与错配，render3d `_iteration/run-2026-09-05-metric-perspective-selfcheck/run.md`）。不做重出循环，那是编排的事。
+- **回执 `gate` 同时记 v3**（`fidelity_metric_v3`：分母从线稿几何取走向、±24 px 平移配准；`_iteration/run-2026-09-05-metric-v3/run.md`）：`fidelity_v3_at_origin`（原位分）、`fidelity_v3_registered`（配准后分）、`registration{sx, sy, dx, dy}`、`metric_versions: ["v2", "v3"]`。**判只按 v2**，v3 只记录——整图错位算不算几何错、阈值取多少都待拍，先攒分布。v3 量不出时 `v3_error` 记原因、出图照常。CLI `realism` 同样打印这几个数。
 - **后端只从配置来**：`ISHOME_REALISM_BACKEND`（缺省 `gateway-sketch`＝走网关的线稿控制路），代码里不出现厂商名；自部署 ControlNet 是第二形态，加一个 `RealismBackend` 实现、配置里点名。
 
 ## CLI（本地迭代入口，不废）
@@ -112,7 +120,7 @@ uv run imagegen realism --line out/cam-bird-dollhouse/line.png --style modern-mi
 uv sync                 # 安装依赖与 dev 工具
 uv run ruff check .     # lint
 uv run ruff format .    # 格式
-uv run lint-imports     # import 方向契约（worker|cli → activities → atmosphere → style_prompt → models；两个出站边缘不感知上层）
+uv run lint-imports     # import 方向契约（worker|cli → activities → atmosphere|realism → fidelity_metric_v3 → style_prompt|fidelity_metric → models；两个出站边缘与两把尺子不感知上层）
 uv run mypy             # strict 类型检查
 uv run pytest           # 测试（activity 注册名 + 对象键 + 两道门禁守门）
 ```
