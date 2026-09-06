@@ -44,16 +44,21 @@ ATMOSPHERE_VISUAL_KEY_TEMPLATE = "uploads/{content_sha256}/atmosphere-{template_
 拍的时候摆过这一条，取"诚实"舍"稳定"。
 """
 
-REALISM_VISUAL_KEY_TEMPLATE = "{source_prefix}/realism-{camera_id}-{style_template_id}.{ext}"
+REALISM_VISUAL_KEY_TEMPLATE = "{source_prefix}/realism-{style_template_id}.{ext}"
 """写实图的对象键：**与源线稿同一前缀**下的一个派生物，照风格图那条键的先例派生。
 
 `{source_prefix}`＝线稿键去掉最后一段（render3d 的 CLI 形态是 `{camera_id}/line.png`，
 桶里的键该长什么样**还没进 contracts `registries/object_keys.md`**——render3d 自己的
 四路键也没登记）。所以本行**不是逐字副本，是待登记的提案**：登记时若形态变了，改这一行
 与守门测试。三条理由同 `ATMOSPHERE_VISUAL_KEY_TEMPLATE`：确定性派生、不铸流水号、
-键里不含用户身份。`{camera_id}` 进键是因为同一套房好几台机位；`{style_template_id}`
-进键是因为同一份线稿会出好几种风格；seed 不进键——同键重跑覆盖（要并存多 seed 给业主挑
-是编排的事，触发条件写死＝出现那个需求时）。`{ext}` 按字节首部判（裁决 2026-09-02）。
+键里不含用户身份。`{style_template_id}` 进键是因为同一份线稿会出好几种风格；
+seed 不进键——同键重跑覆盖（要并存多 seed 给业主挑是编排的事，触发条件写死＝出现那个
+需求时）。`{ext}` 按字节首部判（裁决 2026-09-02）。
+
+**机位不再进文件名（用户裁决 2026-09-06："现在删掉"）**：`{source_prefix}` 的最后一段
+已经是机位（render3d 写的是 `{camera_id}/line.png`），文件名里再写一遍是同一件事说两次。
+问的是"登记之后永远改不了，现在删还是留着"，选的是趁登记前删。备选"留着不动代码"、
+"名字先不登记"未选中。删掉不改派生的确定性：同线稿同风格同格式重跑仍覆盖同一个对象。
 """
 
 _FORMAT_BY_MAGIC = (
@@ -144,6 +149,10 @@ def atmosphere_visual_key_of(master_object_key: str, template_id: str, image_byt
 def check_camera_id(camera_id: str) -> None:
     """机位 id 能不能当对象键的一段用（同模板 id 的口径：只收 `[a-z0-9-]`）。
 
+    **2026-09-06 起机位不再进写实图的文件名**（见 `REALISM_VISUAL_KEY_TEMPLATE`），这条检查
+    因此不再是"键拼得出来"的必要条件：键里那段机位来自 `{source_prefix}`（线稿键的目录段），
+    不来自这个参数。仍照判＝**拍板前行为不动**；"还判不判"并进下面那条待拍项。
+
     **与 render3d 不一致（待拍，不是裁决）**：render3d `object_store.check_key_segment` 不限定
     字符集，拟真包里的室内机位 id 带房间名（`cam-room-客厅`），到这里会被拦下——而且是在
     `put_realism_visual` 写桶那一步才拦，图已经出了。两种统一方向：机位 id 一律 ASCII slug、
@@ -180,13 +189,16 @@ def source_prefix_of_control_key(source_object_key: str) -> str:
 def realism_visual_key_of(
     source_object_key: str, camera_id: str, style_template_id: str, image_bytes: bytes
 ) -> str:
-    """写实图的对象键：与源线稿同前缀，文件名带机位与风格，**扩展名按字节首部判**。"""
+    """写实图的对象键：与源线稿同前缀，文件名只带风格，**扩展名按字节首部判**。
+
+    `camera_id` 不进文件名（裁决 2026-09-06，见 `REALISM_VISUAL_KEY_TEMPLATE`）——前缀最后
+    一段已经是它。参数仍收、仍判，见 `check_camera_id`。
+    """
     source_prefix = source_prefix_of_control_key(source_object_key)
     check_camera_id(camera_id)
     check_template_id(style_template_id)
     return REALISM_VISUAL_KEY_TEMPLATE.format(
         source_prefix=source_prefix,
-        camera_id=camera_id,
         style_template_id=style_template_id,
         ext=image_ext_of(image_bytes),
     )

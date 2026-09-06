@@ -119,10 +119,10 @@ async def test_full_chain_with_a_fake_backend() -> None:
     result = await _renderer(store, backend).apply_realism_pass(_request())
 
     assert result["verdict"] == "ok"
-    # 键与源线稿同前缀，带机位与风格，扩展名跟字节走（几何图是 PNG）
-    assert result["image_object_key"] == (
-        f"uploads/{_SHA}/{_CAMERA_ID}/realism-{_CAMERA_ID}-{_STYLE_ID}.png"
-    )
+    # 键与源线稿同前缀，文件名只带风格，扩展名跟字节走（几何图是 PNG）
+    assert result["image_object_key"] == f"uploads/{_SHA}/{_CAMERA_ID}/realism-{_STYLE_ID}.png"
+    # 机位在键里只出现一次（前缀那段）——文件名里那份 2026-09-06 删掉，别再加回来
+    assert result["image_object_key"].count(_CAMERA_ID) == 1
     assert store.written[result["image_object_key"]] == _GEOMETRY_PNG
     assert result["bucket"] == "ishome-test"
     assert result["source_object_key"] == _LINE_KEY
