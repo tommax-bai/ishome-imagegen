@@ -78,7 +78,7 @@ root_packages = ["imagegen_worker"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "worker|cli → activities → atmosphere|realism → fidelity_metric_v3 → style_prompt|fidelity_metric → models 单向"
+name = "worker|cli → activities → activity_log → atmosphere|realism → fidelity_metric_v3 → style_prompt|fidelity_metric → models 单向"
 type = "layers"
 # 两个入口同层且互不可见（"|" = independent siblings）：`worker` 是 Temporal 入口，
 # `cli` 是本地出一张图的工具。风格图（atmosphere）与写实化（realism）是两条互不可见的
@@ -88,6 +88,9 @@ type = "layers"
 layers = [
   "worker | cli",
   "activities",
+  # 留痕在 activity 底下、纯库层上头：activity 用它记一进一出，出图那几层看不见它——
+  # 那一层响亮失败靠抛异常，"这一跑留下什么"是调用方的事，不是出图的事。
+  "activity_log",
   "atmosphere | realism",
   "fidelity_metric_v3",
   "style_prompt | fidelity_metric",
@@ -106,6 +109,7 @@ forbidden_modules = [
   "imagegen_worker.realism",
   "imagegen_worker.fidelity_metric",
   "imagegen_worker.fidelity_metric_v3",
+  "imagegen_worker.activity_log",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",
@@ -123,6 +127,7 @@ forbidden_modules = [
   "imagegen_worker.fidelity_metric",
   "imagegen_worker.fidelity_metric_v3",
   "imagegen_worker.image_gateway",
+  "imagegen_worker.activity_log",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",
@@ -140,6 +145,7 @@ forbidden_modules = [
   "imagegen_worker.realism",
   "imagegen_worker.image_gateway",
   "imagegen_worker.image_store",
+  "imagegen_worker.activity_log",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",
@@ -157,6 +163,7 @@ forbidden_modules = [
   "imagegen_worker.realism",
   "imagegen_worker.image_gateway",
   "imagegen_worker.image_store",
+  "imagegen_worker.activity_log",
   "imagegen_worker.activities",
   "imagegen_worker.worker",
   "imagegen_worker.cli",

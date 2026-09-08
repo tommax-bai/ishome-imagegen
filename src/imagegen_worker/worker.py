@@ -27,6 +27,7 @@ from imagegen_worker.activities import (
     RealismPassRenderer,
     activity_registry,
 )
+from imagegen_worker.activity_log import configure_logging, logger
 from imagegen_worker.atmosphere import load_template
 from imagegen_worker.image_gateway import DEFAULT_GATEWAY_URL
 from imagegen_worker.image_store import (
@@ -165,15 +166,35 @@ async def run_worker(temporal_address: str) -> None:
     generator = AtmosphereVisualGenerator(store, templates, api_key, gateway_url)
     renderer = RealismPassRenderer(store, realism_templates, backend, gate)
     client = await Client.connect(temporal_address, namespace=GENPIPE_NAMESPACE)
+    registry = activity_registry(generator, renderer)
+    # 起来了要留一条：journal 里"这个 unit 活着"此前只有 systemd 那句 Started，分不清进程是在
+    # 等活干还是连不上 Temporal 正在退。**装了哪几个模板要写进去**——出图失败里
+    # `gate-unknown-template` 那一类，问的就是"这个进程当时装的是哪几个"，事后没处可查。
+    # 保真度下限一并留：没配下限＝只记录不判，那是"图为什么没被拦下"的直接答案。
+    logger.info(
+        "imagegen worker 就位 temporal=%s namespace=%s queue=%s 桶=%s 网关=%s 写实后端=%s"
+        " 保真度下限=%s 风格模板=%s 写实模板=%s activities=%s",
+        temporal_address,
+        GENPIPE_NAMESPACE,
+        IMAGEGEN_TASK_QUEUE,
+        store.bucket_name,
+        gateway_url,
+        backend.name,
+        gate.min_fidelity_score if gate.min_fidelity_score is not None else "未配（只记录不判）",
+        "、".join(sorted(templates)),
+        "、".join(sorted(realism_templates)),
+        "、".join(sorted(registry)),
+    )
     worker = Worker(
         client,
         task_queue=IMAGEGEN_TASK_QUEUE,
-        activities=list(activity_registry(generator, renderer).values()),
+        activities=list(registry.values()),
     )
     await worker.run()
 
 
 def main() -> None:
+    configure_logging()
     asyncio.run(run_worker(os.environ.get("TEMPORAL_ADDRESS", "localhost:7233")))
 
 

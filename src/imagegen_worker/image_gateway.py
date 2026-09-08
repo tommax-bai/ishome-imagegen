@@ -14,9 +14,16 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
+import time
 import urllib.error
 import urllib.request
 from typing import Any
+
+logger = logging.getLogger(__name__)
+"""出图这一步**必须在日志里看得见**（2026-09-07 定）：一张 2K 图真跑要两分钟，
+"生成卡住了"与"网关慢"在业务库那段 JSON 里长得一模一样。级别与落点由进程入口
+（`activity_log.configure_logging`）统一决定，本模块只管记，不碰配置——出站边缘不感知上层。"""
 
 DEFAULT_GATEWAY_URL = "http://127.0.0.1:4000"
 IMAGE_ENDPOINT = "/v1/images/generations"
@@ -41,6 +48,23 @@ class ImageGatewayError(Exception):
 
 
 def _post(url: str, api_key: str, body: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
+    """一次出图调用。**进出各记一条**：逻辑模型名 + 走的哪条路 + 花了多久。
+
+    记的是**逻辑名**不是物理模型（`atmosphere-visual.default` / `realism-pass.default`）——
+    换模型改的是网关配置，日志里出现物理模型名等于把映射抄了第二份，换了就对不上。
+    走哪条路（图生图 / 线稿控制）也要记：两条路的失败形态不同（一条会静默退化成文生图、
+    另一条网关缺参直接 4xx），只看模型名分不出是哪条。
+    """
+    model = str(body.get("model", "?"))
+    channel = "线稿控制" if body.get("is_sketch") else "图生图"
+    logger.info(
+        "出图调用 model=%s 通路=%s 源图=%d字节 超时=%ds",
+        model,
+        channel,
+        len(str(body.get("image", ""))),
+        timeout_seconds,
+    )
+    started = time.monotonic()
     request = urllib.request.Request(
         url,
         data=json.dumps(body).encode(),
@@ -50,15 +74,48 @@ def _post(url: str, api_key: str, body: dict[str, Any], timeout_seconds: int) ->
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             payload: dict[str, Any] = json.load(response)
     except urllib.error.HTTPError as e:
+        # 失败这条也要带上耗时：网关拒绝是秒级、超时是分钟级，这个数把"配置不对"与
+        # "模型真的慢"分开——只看状态码分不出来。
+        detail = e.read().decode()[:400]
+        logger.warning(
+            "出图失败 model=%s 通路=%s 耗时 %.3fs 网关拒绝 HTTP %d：%s",
+            model,
+            channel,
+            time.monotonic() - started,
+            e.code,
+            detail,
+        )
         raise ImageGatewayError(
-            [f"网关拒绝（HTTP {e.code}）：{e.read().decode()[:400]}"],
+            [f"网关拒绝（HTTP {e.code}）：{detail}"],
             http_status=e.code,
             transient=e.code >= 500,
         ) from e
     except (urllib.error.URLError, TimeoutError) as e:
+        logger.warning(
+            "出图失败 model=%s 通路=%s 耗时 %.3fs 网关连不上：%s",
+            model,
+            channel,
+            time.monotonic() - started,
+            e,
+        )
         raise ImageGatewayError([f"网关连不上：{e}"], transient=True) from e
     except json.JSONDecodeError as e:
+        logger.warning(
+            "出图失败 model=%s 通路=%s 耗时 %.3fs 回执不是 JSON：%s",
+            model,
+            channel,
+            time.monotonic() - started,
+            e,
+        )
         raise ImageGatewayError([f"网关回了不是 JSON 的东西：{e}"]) from e
+    logger.info(
+        "出图返回 model=%s 通路=%s 耗时 %.3fs 图数=%d input_images=%s",
+        model,
+        channel,
+        time.monotonic() - started,
+        len(payload.get("data") or []),
+        payload.get("usage", {}).get("input_images"),
+    )
     return payload
 
 

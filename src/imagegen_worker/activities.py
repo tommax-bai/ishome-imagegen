@@ -24,6 +24,7 @@ from typing import Any
 from pydantic import ValidationError
 from temporalio import activity
 
+from imagegen_worker.activity_log import logged_activity
 from imagegen_worker.atmosphere import (
     AtmosphereError,
     master_size_px,
@@ -72,6 +73,7 @@ class AtmosphereVisualGenerator:
         self._gateway_url = gateway_url
 
     @activity.defn(name=ACTIVITY_ATMOSPHERE_VISUAL)
+    @logged_activity
     async def generate_atmosphere_visual(self, request: dict[str, Any]) -> ActivityResult:
         """母版（桶里）+ 房间表 + 模板 → 一张风格图 → 写回同一前缀，返回**对象键**。
 
@@ -195,6 +197,7 @@ class RealismPassRenderer:
         self._gate = gate
 
     @activity.defn(name=ACTIVITY_REALISM_PASS)
+    @logged_activity
     async def apply_realism_pass(self, request: dict[str, Any]) -> ActivityResult:
         """线稿（桶里）+ 风格模板 + 视角 → 写实图 → 量分 → 写回同一前缀，返回**对象键**与自证数。
 
