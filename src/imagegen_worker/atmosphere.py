@@ -26,6 +26,12 @@ from imagegen_worker.style_prompt import build_prompt
 ATMOSPHERE_MODEL = "atmosphere-visual.default"
 """逻辑模型名（物理映射在 infra 的网关配置里，换模型不动代码）。"""
 
+ATMOSPHERE_CALL_POINT = "atmosphere-visual"
+"""这一处 AI 判断的名字，随每次调用报给网关（网关按它把调用记到正确的名下）。
+
+与逻辑模型名同词不同物：模型名说的是"调哪个模型"、换模型就变，这个说的是"母版画成风格图"
+这一步本身、换模型不变。名字的真源是判官台那张基本信息表，此处照抄不改。"""
+
 
 class AtmosphereError(Exception):
     """风格图出不来。响亮失败，不给一张"差不多的"图。"""
@@ -193,8 +199,13 @@ def render_atmosphere_visual(
     gateway_url: str = image_gateway.DEFAULT_GATEWAY_URL,
     annotations: Sequence[RoomAnnotation] = (),
     life_object_slots: Sequence[LifeObjectSlot] = (),
+    run_ref: str | None = None,
 ) -> AtmosphereVisual:
-    """一次风格图生成。注释与槽位是可选的派发数据（不给＝行为与从前逐字节相同）。"""
+    """一次风格图生成。注释与槽位是可选的派发数据（不给＝行为与从前逐字节相同）。
+
+    `run_ref` 是这次运行的编号，只往下传给网关做调用记录、不参与出图；本地出一张图那条路
+    （CLI）没有运行编号，不给就是 None——不编一个。
+    """
     if not rooms:
         raise AtmosphereError(
             ["房间表是空的：母版上没有字，不给房间表模型只能靠家具猜功能，猜错是必然不是偶然"]
@@ -220,6 +231,8 @@ def render_atmosphere_visual(
             source_png=master_png,
             size=template.size,
             api_key=api_key,
+            call_point=ATMOSPHERE_CALL_POINT,
+            run_ref=run_ref,
             gateway_url=gateway_url,
         )
     except image_gateway.ImageGatewayError as e:

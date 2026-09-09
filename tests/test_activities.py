@@ -15,6 +15,7 @@ import struct
 from typing import Any
 
 import pytest
+from temporalio import activity as temporal_activity
 
 from imagegen_worker import image_gateway
 from imagegen_worker.activities import ACTIVITY_ATMOSPHERE_VISUAL, AtmosphereVisualGenerator
@@ -97,6 +98,15 @@ class _StubImageStore:
         return key
 
 
+class _FakeActivityInfo:
+    """Temporal 的 activity 上下文桩件：四个字段——运行编号取 workflow_id，其余三个留痕那层要用。"""
+
+    activity_type = ACTIVITY_ATMOSPHERE_VISUAL
+    workflow_id = "wf-42"
+    workflow_run_id = "run-1"
+    attempt = 1
+
+
 def _generator(store: Any) -> AtmosphereVisualGenerator:
     return AtmosphereVisualGenerator(store, {_TEMPLATE_ID: _TEMPLATE}, "k", "http://gateway.test")
 
@@ -143,6 +153,26 @@ async def test_generates_and_writes_the_visual(
     assert gateway_returns_an_image[0]["source_png"] == _png(_MASTER_WIDTH_PX, _MASTER_HEIGHT_PX)
     # 逻辑模型名，不是厂商模型：换模型是改网关配置，不是改这里。
     assert gateway_returns_an_image[0]["model"] == "atmosphere-visual.default"
+    # 这一处 AI 判断的名字：网关只看得见模型名，是哪一步只有发请求这侧知道。
+    assert gateway_returns_an_image[0]["call_point"] == "atmosphere-visual"
+    # 不在 Temporal 上下文里（单测直接调实现件）就没有运行编号——如实写 None，不编一个。
+    assert gateway_returns_an_image[0]["run_ref"] is None
+
+
+async def test_the_run_ref_comes_from_the_workflow_id(
+    gateway_returns_an_image: list[dict[str, Any]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """运行编号用现成的 Temporal workflow id 拼，不为调用记录新造一个标识。
+
+    一次派发里六张风格图共用一个 workflow id，后面拼模板名才分得开是哪一张。
+    """
+    monkeypatch.setattr(temporal_activity, "in_activity", lambda: True)
+    monkeypatch.setattr(temporal_activity, "info", lambda: _FakeActivityInfo())
+
+    await _generator(_StubImageStore()).generate_atmosphere_visual(_request())
+
+    assert gateway_returns_an_image[0]["run_ref"] == f"wf-42:{_TEMPLATE_ID}"
 
 
 async def test_room_table_reaches_the_model(

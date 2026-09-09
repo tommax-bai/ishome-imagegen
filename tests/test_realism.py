@@ -221,7 +221,7 @@ def test_gateway_backend_sends_the_contract_shape(gateway_factory: Any) -> None:
     backend = realism.GatewaySketchBackend("k-test", gateway.url)
     sketch = realism.build_control_sketch(_LINE_PNG)
 
-    output = backend.generate(sketch, "一段提示词", 12345)
+    output = backend.generate(sketch, "一段提示词", 12345, run_ref="wf-7:cam-a:seed12345")
 
     assert output.image_bytes == _GEOMETRY_PNG
     assert output.backend_name == "gateway-sketch"
@@ -243,6 +243,58 @@ def test_gateway_backend_sends_the_contract_shape(gateway_factory: Any) -> None:
     sent = base64.b64decode(body["image"].split(",", 1)[1])
     assert sent == sketch
     assert Image.open(io.BytesIO(sent)).mode == "RGB"
+    # 这次调用记在谁名下：哪一处 AI 判断、属于哪次运行——网关只看得见模型名，分不出这两件
+    assert body["metadata"] == {"call_point": "realism-pass", "run_ref": "wf-7:cam-a:seed12345"}
+
+
+def test_gateway_backend_marks_the_call_point_even_without_a_run_ref(
+    gateway_factory: Any,
+) -> None:
+    """本地那条路没有运行编号：调用点名照报，运行编号如实写 None——不编一个。"""
+    gateway = gateway_factory([(200, _ok_payload(_GEOMETRY_PNG))])
+    backend = realism.GatewaySketchBackend("k", gateway.url)
+
+    backend.generate(realism.build_control_sketch(_LINE_PNG), "p", 1)
+
+    assert gateway.requests[0]["body"]["metadata"] == {
+        "call_point": "realism-pass",
+        "run_ref": None,
+    }
+
+
+def test_render_passes_the_run_ref_down_to_the_backend() -> None:
+    """写实化这一步不自己造编号：拿到什么原样递给后端，拿不到就是 None。"""
+    seen: list[str | None] = []
+
+    class _Backend:
+        name = "fake"
+
+        def capabilities(self) -> realism.RealismCapabilities:
+            return realism.RealismCapabilities(("sketch",), True, 1, None)
+
+        def generate(
+            self, sketch_png: bytes, prompt: str, seed: int | None, *, run_ref: str | None = None
+        ) -> realism.RealismOutput:
+            seen.append(run_ref)
+            return realism.RealismOutput(
+                image_bytes=_GEOMETRY_PNG,
+                backend_name=self.name,
+                seed=seed,
+                elapsed_seconds=0.0,
+                raw_meta={},
+            )
+
+    for run_ref in ("wf-7:cam-a:seed3", None):
+        realism.render_realism_visual(
+            line_png=_LINE_PNG,
+            template=_TEMPLATE,
+            view_kind="bird",
+            seed=3,
+            backend=_Backend(),
+            run_ref=run_ref,
+        )
+
+    assert seen == ["wf-7:cam-a:seed3", None]
 
 
 def test_gateway_backend_omits_seed_when_none(gateway_factory: Any) -> None:

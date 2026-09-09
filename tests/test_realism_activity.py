@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from temporalio import activity as temporal_activity
 
 from imagegen_worker import fidelity_metric_v3, realism
 from imagegen_worker.activities import ACTIVITY_REALISM_PASS, RealismPassRenderer
@@ -42,8 +43,12 @@ class FakeRealismBackend:
     def capabilities(self) -> realism.RealismCapabilities:
         return realism.RealismCapabilities(("sketch",), True, 1, None)
 
-    def generate(self, sketch_png: bytes, prompt: str, seed: int | None) -> realism.RealismOutput:
-        self.calls.append({"sketch_png": sketch_png, "prompt": prompt, "seed": seed})
+    def generate(
+        self, sketch_png: bytes, prompt: str, seed: int | None, *, run_ref: str | None = None
+    ) -> realism.RealismOutput:
+        self.calls.append(
+            {"sketch_png": sketch_png, "prompt": prompt, "seed": seed, "run_ref": run_ref}
+        )
         if self._fails_with is not None:
             raise realism.RealismError([self._fails_with])
         return realism.RealismOutput(
@@ -110,6 +115,37 @@ def _request(**overrides: Any) -> dict[str, Any]:
     }
     request.update(overrides)
     return request
+
+
+class _FakeActivityInfo:
+    """Temporal 的 activity 上下文桩件：四个字段——运行编号取 workflow_id，其余三个留痕那层要用。"""
+
+    activity_type = ACTIVITY_REALISM_PASS
+    workflow_id = "wf-42"
+    workflow_run_id = "run-1"
+    attempt = 1
+
+
+async def test_the_run_ref_comes_from_the_workflow_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """运行编号用现成的 Temporal workflow id 拼，不为调用记录新造一个标识。
+
+    同一次运行里同一个机位可能换种子重出，编号带上机位与种子才分得开是哪一跑；
+    不在 activity 上下文里（单测直接调实现件）就没有编号，如实写 None、不编一个。
+    """
+    backend = FakeRealismBackend()
+    await _renderer(_StubImageStore(), backend).apply_realism_pass(_request())
+    assert backend.calls[0]["run_ref"] is None
+
+    monkeypatch.setattr(temporal_activity, "in_activity", lambda: True)
+    monkeypatch.setattr(temporal_activity, "info", lambda: _FakeActivityInfo())
+
+    marked = FakeRealismBackend()
+    await _renderer(_StubImageStore(), marked).apply_realism_pass(_request())
+    assert marked.calls[0]["run_ref"] == f"wf-42:{_CAMERA_ID}:seed12345"
+
+    seedless = FakeRealismBackend()
+    await _renderer(_StubImageStore(), seedless).apply_realism_pass(_request(seed=None))
+    assert seedless.calls[0]["run_ref"] == f"wf-42:{_CAMERA_ID}"
 
 
 async def test_full_chain_with_a_fake_backend() -> None:

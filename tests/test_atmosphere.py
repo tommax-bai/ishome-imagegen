@@ -50,8 +50,67 @@ def test_gateway_failure_surfaces_as_atmosphere_failure(monkeypatch: pytest.Monk
 def test_empty_master_never_reaches_the_model() -> None:
     with pytest.raises(image_gateway.ImageGatewayError, match="源图是空的"):
         image_gateway.generate_from_image(
-            model="m", prompt="p", source_png=b"", size="2K", api_key="k"
+            model="m",
+            prompt="p",
+            source_png=b"",
+            size="2K",
+            api_key="k",
+            call_point=atmosphere.ATMOSPHERE_CALL_POINT,
         )
+
+
+def test_the_call_is_marked_with_who_asked_and_which_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    """请求体里带着"这是哪一处 AI 判断、属于哪次运行"——网关只看得见模型名，分不出这两件。"""
+    bodies: list[dict[str, object]] = []
+
+    def _capture(
+        url: str, api_key: str, body: dict[str, object], timeout_seconds: int
+    ) -> dict[str, object]:
+        bodies.append(body)
+        return {"usage": {"input_images": 1}, "data": [{"b64_json": "aW1n"}]}
+
+    monkeypatch.setattr(image_gateway, "_post", _capture)
+
+    image_gateway.generate_from_image(
+        model="m",
+        prompt="p",
+        source_png=b"png",
+        size="2K",
+        api_key="k",
+        call_point="atmosphere-visual",
+        run_ref="wf-42:cream-journal",
+    )
+
+    assert bodies[0]["metadata"] == {
+        "call_point": "atmosphere-visual",
+        "run_ref": "wf-42:cream-journal",
+    }
+
+
+def test_render_names_this_call_point_and_passes_the_run_ref(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """母版画成风格图这一步报的名字是 `atmosphere-visual`，运行编号原样往下传。"""
+    calls: list[dict[str, object]] = []
+
+    def _generate(**kwargs: object) -> tuple[bytes, str]:
+        calls.append(kwargs)
+        return b"\x89PNG\r\n\x1a\nimg", ""
+
+    monkeypatch.setattr(image_gateway, "generate_from_image", _generate)
+
+    atmosphere.render_atmosphere_visual(
+        master_png=b"png",
+        rooms=_ROOMS,
+        template=_TEMPLATE,
+        master_width_px=900,
+        master_height_px=900,
+        api_key="k",
+        run_ref="wf-42:t",
+    )
+
+    assert calls[0]["call_point"] == "atmosphere-visual"
+    assert calls[0]["run_ref"] == "wf-42:t"
 
 
 @pytest.mark.parametrize("path", sorted(_TEMPLATES_DIR.glob("*.json")), ids=lambda p: p.stem)

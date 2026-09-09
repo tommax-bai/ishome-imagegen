@@ -52,6 +52,23 @@ ACTIVITY_REALISM_PASS = "realism-pass"
 """contracts 注册名（#5 / #8）。字符串在此各声明一次，worker 与守门测试都引它。"""
 
 
+def _run_ref(*parts: str) -> str | None:
+    """这次运行的编号，随调用报给网关（网关按它把一次运行的多次调用串回一起）。
+
+    **用现成的标识，不新造**：整条派发链路本来就有 Temporal 的 workflow id，它就是"这次运行"；
+    后面再拼上本次出的是哪一张（模板名 / 机位与种子），同一次运行里的几张图才分得开。
+
+    不在 activity 上下文里（CLI、单测直接调实现件）就**回 None**——拿不到就说没有，不编一个
+    看着像编号的东西：网关那边宁可记成"这次运行不明"，也不能记成一个查无此项的编号。
+    """
+    if not activity.in_activity():
+        return None
+    workflow_id = activity.info().workflow_id
+    if not workflow_id:
+        return None
+    return ":".join((workflow_id, *parts))
+
+
 class AtmosphereVisualGenerator:
     """风格图 activity 的实现件，依赖由组合根（worker）注入。
 
@@ -134,6 +151,7 @@ class AtmosphereVisualGenerator:
                 gateway_url=self._gateway_url,
                 annotations=parsed.annotations,
                 life_object_slots=parsed.life_object_slots,
+                run_ref=_run_ref(template.template_id),
             )
         except AtmosphereError as e:
             # 房间表空、输入图没送到模型（静默退化成文生图）、注释/槽位与房间表对不上——
@@ -238,6 +256,11 @@ class RealismPassRenderer:
                 view_kind=parsed.view_kind,
                 seed=parsed.seed,
                 backend=self._backend,
+                # 同一次运行里一个机位可能换种子重出，编号带上种子才分得开是哪一跑
+                run_ref=_run_ref(
+                    parsed.camera_id,
+                    *(() if parsed.seed is None else (f"seed{parsed.seed}",)),
+                ),
             )
         except RealismError as e:
             # 线稿解不成图、网关拒绝、回执没有图——逐条回报；要不要重试由编排侧显式决定，

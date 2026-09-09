@@ -38,6 +38,12 @@ from imagegen_worker.models import RealismStyleTemplate, ViewKind
 REALISM_MODEL = "realism-pass.default"
 """逻辑模型名（物理映射在 infra 的网关配置里，换模型不动代码）。"""
 
+REALISM_CALL_POINT = "realism-pass"
+"""这一处 AI 判断的名字，随每次调用报给网关（网关按它把调用记到正确的名下）。
+
+与逻辑模型名同词不同物：模型名说的是"调哪个模型"、换后端就变，这个说的是"线稿画成写实图"
+这一步本身、换后端不变。名字的真源是判官台那张基本信息表，此处照抄不改。"""
+
 GATEWAY_SKETCH_BACKEND_NAME = "gateway-sketch"
 """走网关的线稿控制后端在配置里的名字（`ISHOME_REALISM_BACKEND`），也是默认值。"""
 
@@ -182,8 +188,14 @@ class RealismBackend(Protocol):
 
     def capabilities(self) -> RealismCapabilities: ...
 
-    def generate(self, sketch_png: bytes, prompt: str, seed: int | None) -> RealismOutput:
-        """一张控制稿 + 一段提示词 → 一张图。出不来抛 `RealismError`，不回空图。"""
+    def generate(
+        self, sketch_png: bytes, prompt: str, seed: int | None, *, run_ref: str | None = None
+    ) -> RealismOutput:
+        """一张控制稿 + 一段提示词 → 一张图。出不来抛 `RealismError`，不回空图。
+
+        `run_ref` 是这次运行的编号，只用于网关那边的调用记录、不参与出图；本地那条路没有
+        运行编号，不给就是 None。走网关的后端才用得上它，自部署形态收下不用也合约。
+        """
         ...
 
 
@@ -228,7 +240,9 @@ class GatewaySketchBackend:
             max_output_px=None,
         )
 
-    def generate(self, sketch_png: bytes, prompt: str, seed: int | None) -> RealismOutput:
+    def generate(
+        self, sketch_png: bytes, prompt: str, seed: int | None, *, run_ref: str | None = None
+    ) -> RealismOutput:
         started = time.monotonic()
         attempts_left = 2
         while True:
@@ -240,6 +254,8 @@ class GatewaySketchBackend:
                     sketch_png=sketch_png,
                     seed=seed,
                     api_key=self._api_key,
+                    call_point=REALISM_CALL_POINT,
+                    run_ref=run_ref,
                     gateway_url=self._gateway_url,
                     timeout_seconds=self._timeout_seconds,
                 )
@@ -305,14 +321,17 @@ def render_realism_visual(
     view_kind: ViewKind,
     seed: int | None,
     backend: RealismBackend,
+    run_ref: str | None = None,
 ) -> RealismVisual:
     """线稿 + 风格模板 + 视角 → 一张写实图。
 
     两条路（CLI / activity）共用这一份，区别只在线稿字节从哪儿来（磁盘 / 私有桶）。
+
+    `run_ref` 是这次运行的编号，原样递给后端做调用记录、不参与出图；CLI 那条路不给，就是 None。
     """
     sketch_png = build_control_sketch(line_png)
     prompt = build_realism_prompt(template, view_kind)
-    output = backend.generate(sketch_png, prompt, seed)
+    output = backend.generate(sketch_png, prompt, seed, run_ref=run_ref)
     if not output.image_bytes:
         raise RealismError([f"后端 `{output.backend_name}` 回了空图：不往下走"])
     return RealismVisual(
